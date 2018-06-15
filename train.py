@@ -9,7 +9,6 @@ from PIL import Image
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from constants import *
 from data import *
 from encoders import *
 from decoders import *
@@ -30,7 +29,7 @@ def main(args):
     verbose = args.verbose
     lr = args.learning_rate
     batch_size = args.batch_size
-    model_type = args.model_type
+    model_type = "coco"
     weight_decay = args.weight_decay
     if args.attention == "true":
         attention = True
@@ -48,7 +47,6 @@ def main(args):
 
     print("\n[settings]")
     print("GPU:", args.gpu)
-    print("model_type:", args.model_type)
     print("pretrained:", args.pretrained)
     print("attention:", args.attention)
     print("evaluation:", args.evaluation)
@@ -377,7 +375,6 @@ if __name__ == "__main__":
     parser.add_argument("--weight_decay", type=float, default=0, help="penalty on the optimizer")
     parser.add_argument("--batch_size", type=int, default=50, help="batch size")
     parser.add_argument("--gpu", type=str, help="specify the graphic card")
-    parser.add_argument("--model_type", type=str, default="2d", help="type of model to train")
     parser.add_argument("--pretrained", type=str, default=None, help="vgg/resnet")
     parser.add_argument("--attention", type=str, default="false", help="true/false")
     parser.add_argument("--evaluation", type=str, default="false", help="true/false")

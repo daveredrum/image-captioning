@@ -10,7 +10,6 @@ import torch
 import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.optim as optim
-from constants import *
 from data import *
 from decoders import *
 from solver import *
@@ -116,7 +115,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", type=str, default="coco", help="source and type of the input data")
     parser.add_argument("--phase", type=str, help="train/val/test")
-    parser.add_argument("--pretrained", type=str, help="vgg16/resnet")
+    parser.add_argument("--pretrained", type=str, help="vgg/resnet")
     parser.add_argument("--train_size", type=int)
     parser.add_argument("--val_size", type=int)
     parser.add_argument("--test_size", type=int)
