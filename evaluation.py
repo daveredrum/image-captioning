@@ -137,8 +137,6 @@ def main(args):
     print()
     encoder = torch.load(os.path.join("models", encoder_path)).cuda()
     decoder = torch.load(os.path.join("models", decoder_path)).cuda()
-    print("evaluating...")
-    print()
     encoder.eval()
     decoder.eval()
     beam_size = ['1', '3', '5', '7']
@@ -152,7 +150,7 @@ def main(args):
         print()
         candidates = json.load(open("scores/{}.json".format(outname)))
     else:
-        print("evaluating...")
+        print("\nevaluating with beam search...")
         print()
         for _, (model_ids, visuals, captions, cap_lengths) in enumerate(test_dl):
             visual_inputs = Variable(visuals, requires_grad=False).cuda()
@@ -162,10 +160,10 @@ def main(args):
             max_length = int(cap_lengths[0].item()) + 10
             for bs in beam_size:
                 if attention:
-                    outputs[bs] = decoder.beam_search(visual_contexts, caption_inputs, bs, max_length)
+                    outputs[bs] = decoder.beam_search(visual_contexts, caption_inputs, int(bs), max_length)
                     outputs[bs] = decode_attention_outputs(outputs[bs], None, dict_idx2word, "val")
                 else:
-                    outputs[bs] = decoder.beam_search(visual_contexts, bs, max_length)
+                    outputs[bs] = decoder.beam_search(visual_contexts, int(bs), max_length)
                     outputs[bs] = decode_outputs(outputs[bs], None, dict_idx2word, "val")
                 for model_id, output in zip(model_ids, outputs[bs]):
                     if model_id not in candidates[bs].keys():
