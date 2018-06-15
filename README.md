@@ -11,6 +11,7 @@ Evaluate captions via `capeval/`, which is derived from [tylin/coco-caption](htt
     - [val2014 images](http://images.cocodataset.org/zips/val2014.zip)
 - Instead of using random split, [Karpathy's split](http://cs.stanford.edu/people/karpathy/deepimagesent/caption_datasets.zip) is required, please put it in the `COCO_PATH`
 - PyTorch v0.3.1 or newer with GPU support.
+- TensorBoardX
 
 ## Usage
 ### 1. Preprocessing
