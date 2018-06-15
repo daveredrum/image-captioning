@@ -34,6 +34,8 @@ def main(args):
             database=os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_DATABASE.format(phase, coco_size))
         )
         dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=False)
+        if not os.path.exists("data/"):
+            os.mkdir("data/")
         database = h5py.File(os.path.join("data", configs.COCO_FEATURE.format(phase, args.pretrained)), "w", libver='latest')
         if args.pretrained == "vgg":
             storage = database.create_dataset("features", (len(dataset), 512 * 14 * 14), dtype="float")

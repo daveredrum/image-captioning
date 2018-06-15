@@ -29,9 +29,7 @@ def main(args):
             coco_dir = os.path.join(coco_root, "%s2014" % "train")
         else:
             coco_dir = os.path.join(coco_root, "%s2014" % "val")
-        if not os.path.exists("data/"):
-            os.mkdir("data/")
-        coco_split = os.path.join("data", configs.COCO_SPLIT)
+        coco_split = os.path.join(configs.COCO_ROOT, configs.COCO_SPLIT)
         coco_paths = None
         if not os.path.exists(os.path.join(coco_root, "preprocessed")):
             os.mkdir(os.path.join(coco_root, "preprocessed"))
