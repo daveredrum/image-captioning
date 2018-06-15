@@ -370,7 +370,7 @@ if __name__ == "__main__":
     parser.add_argument("--train_size", type=int, default=100, help="train size for input captions")
     parser.add_argument("--val_size", type=int, default=100, help="val size for input captions")
     parser.add_argument("--test_size", type=int, default=0, help="test size for input captions")
-    parser.add_argument("--beam_size", type=int, default=1, help="beam size")
+    parser.add_argument("--beam_size", type=int, default=1, help="beam size for online evaluation via beam search")
     parser.add_argument("--epoch", type=int, default=100, help="epochs for training")
     parser.add_argument("--verbose", type=int, default=1, help="show report")
     parser.add_argument("--learning_rate", type=float, default=0.001, help="learning rate for optimizer")
