@@ -61,7 +61,7 @@ For the model with attention.
 |---|---|---|---|---|---|
 |Baseline (Nearest neighbor)|0.48|0.281|0.166|0.1|0.383|
 |__ResNet152 <br/> LSTM__|__0.720__|__0.536__|__0.388__|__0.286__|__0.805__|
-|__ResNet152 <br/> Attention <br/> LSTM__|__0.697__|__0.504__|__0.351__|__0.249__|__0.718__|
+|__ResNet152 <br/> Attention <br/> LSTM__|__0.707__|__0.517__|__0.366__|__0.264__|__0.743__|
 |NeuralTalk2|0.625|0.45|0.321|0.23|0.66|
 |Show and Tell|0.666|0.461|0.329|0.27|-|
 |Show, Attend and Tell|0.707|0.492|0.344|0.243|-|
@@ -73,4 +73,4 @@ For the model with attention.
 > |Model|train_size|test_size|learning_rate|weight_decay|batch_size|beam_size|dropout|
 > |---|---|---|---|---|---|---|---|
 > |__ResNet152 <br/> LSTM__|-1|-1|2e-4|0|512|7|0|
-> |__ResNet152 <br/> Attention <br/> LSTM__|-1|-1|2e-4|1e-5|128|7|0|
+> |__ResNet152 <br/> Attention <br/> LSTM__|-1|-1|2e-4|1e-5|100|7|0|
