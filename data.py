@@ -88,22 +88,17 @@ class COCO(object):
         if self.train_size == -1:
             self.original_csv['train'] = train_csv
         else:
-            train_id = train_csv.image_id.drop_duplicates().values.tolist()[:self.train_size]
-            self.original_csv['train'] = train_csv.loc[train_csv.image_id.isin(train_id)]
+            self.original_csv['train'] = train_csv.iloc[:self.train_size]
         # valation set
         if self.val_size == -1:
-            val_id = val_csv.image_id.drop_duplicates().values.tolist()
-            self.original_csv['val'] = val_csv.loc[val_csv.image_id.isin(val_id)]
+            self.original_csv['val'] = val_csv
         else:
-            val_id = val_csv.image_id.drop_duplicates().values.tolist()[:self.val_size]
-            self.original_csv['val'] = val_csv.loc[val_csv.image_id.isin(val_id)]
+            self.original_csv['val'] = val_csv.iloc[:self.val_size]
         # testing set
         if self.test_size == -1:
-            test_id = test_csv.image_id.drop_duplicates().values.tolist()
-            self.original_csv['test'] = test_csv.loc[test_csv.image_id.isin(test_id)]
+            self.original_csv['test'] = test_csv
         else:
-            test_id = test_csv.image_id.drop_duplicates().values.tolist()[:self.test_size]
-            self.original_csv['test'] = test_csv.loc[test_csv.image_id.isin(test_id)]
+            self.original_csv['test'] = test_csv.iloc[:self.test_size]
         # dictionaries
         self.dict_word2idx = None
         self.dict_idx2word = None
@@ -217,7 +212,10 @@ class COCO(object):
     # transform all words to their indices in the dictionary
     def _tranform(self):
         for phase in ["train", "val", "test"]:
-            self.transformed_data[phase] = copy.deepcopy(self.preprocessed_data[phase])
+            if phase == "val" or phase == "test":
+                self.transformed_data[phase] = copy.deepcopy(self.preprocessed_data[phase]).drop_duplicates(subset='image_id')
+            else:
+                self.transformed_data[phase] = copy.deepcopy(self.preprocessed_data[phase])
             captions_list = self.transformed_data[phase].caption.values.tolist()
             for i in range(len(captions_list)):
                 temp_list = []

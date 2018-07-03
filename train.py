@@ -45,22 +45,6 @@ def main(args):
     else:
         model_name = "shallow"
 
-    print("\n[settings]")
-    print("GPU:", args.gpu)
-    print("pretrained:", args.pretrained)
-    print("attention:", args.attention)
-    print("evaluation:", args.evaluation)
-    print("train_size:", args.train_size)
-    print("val_size:", args.val_size)
-    print("test_size:", args.test_size)
-    print("beam_size:", args.beam_size)
-    print("epoch:", args.epoch)
-    print("verbose:", args.verbose)
-    print("batch_size:", args.batch_size)
-    print("learning_rate:", args.learning_rate)
-    print("weight_decay:", args.weight_decay)
-    print()
-
     ###################################################################
     #                                                                 #
     #                                                                 #
@@ -167,6 +151,23 @@ def main(args):
     else:
         print("initializing decoder without attention....")        
         decoder = Decoder(input_size, hidden_size, num_layer).cuda()
+    
+    print("\n[settings]")
+    print("GPU:", args.gpu)
+    print("pretrained:", args.pretrained)
+    print("attention:", args.attention)
+    print("evaluation:", args.evaluation)
+    print("train_size:", train_captions.shape[0])
+    print("val_size:", val_captions.shape[0])
+    print("test_size:", test_captions.shape[0])
+    print("beam_size:", args.beam_size)
+    print("epoch:", args.epoch)
+    print("verbose:", args.verbose)
+    print("batch_size:", args.batch_size)
+    print("learning_rate:", args.learning_rate)
+    print("weight_decay:", args.weight_decay)
+    print()
+    print("[LSTM settings]")
     print("input_size:", input_size)
     print("dict_size:", dict_word2idx.__len__())
     print("hidden_size:", hidden_size)
