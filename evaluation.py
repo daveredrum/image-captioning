@@ -65,6 +65,7 @@ class Report():
         return chosen
     
     def __call__(self, path):
+        plt.switch_backend("agg")
         for q in ["high", "low", "medium"]:
             fig = plt.figure(dpi=100)
             fig.set_size_inches(8, 24)

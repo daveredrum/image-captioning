@@ -92,13 +92,15 @@ class COCO(object):
             self.original_csv['train'] = train_csv.loc[train_csv.image_id.isin(train_id)]
         # valation set
         if self.val_size == -1:
-            self.original_csv['val'] = val_csv
+            val_id = val_csv.image_id.drop_duplicates().values.tolist()
+            self.original_csv['val'] = val_csv.loc[val_csv.image_id.isin(val_id)]
         else:
             val_id = val_csv.image_id.drop_duplicates().values.tolist()[:self.val_size]
             self.original_csv['val'] = val_csv.loc[val_csv.image_id.isin(val_id)]
         # testing set
         if self.test_size == -1:
-            self.original_csv['test'] = test_csv
+            test_id = test_csv.image_id.drop_duplicates().values.tolist()
+            self.original_csv['test'] = test_csv.loc[test_csv.image_id.isin(test_id)]
         else:
             test_id = test_csv.image_id.drop_duplicates().values.tolist()[:self.test_size]
             self.original_csv['test'] = test_csv.loc[test_csv.image_id.isin(test_id)]
