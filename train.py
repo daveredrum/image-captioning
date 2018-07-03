@@ -55,7 +55,7 @@ def main(args):
 
     # for coco
     # preprocessing
-    print("preparing data....")
+    print("\npreparing data....")
     print()
     coco = COCO(
         # for training
