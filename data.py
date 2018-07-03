@@ -31,7 +31,7 @@ class COCOCaptionDataset(Dataset):
 
     def __getitem__(self, idx):
         # return (model_id, image_inputs, padded_caption, cap_length)
-        image = self.database["features"][self.index[str(idx)]]
+        image = self.database["features"][self.index[str(self.csv_file.iloc[idx].index)]]
         image = torch.FloatTensor(image)
 
         return str(self.model_ids[idx]), image, self.caption_lists[idx], len(self.caption_lists[idx])
