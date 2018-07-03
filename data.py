@@ -31,7 +31,7 @@ class COCOCaptionDataset(Dataset):
 
     def __getitem__(self, idx):
         # return (model_id, image_inputs, padded_caption, cap_length)
-        image = self.database["features"][self.index[str(self.csv_file.iloc[idx].index)]]
+        image = self.database["features"][self.index[str(idx)]]
         image = torch.FloatTensor(image)
 
         return str(self.model_ids[idx]), image, self.caption_lists[idx], len(self.caption_lists[idx])
@@ -212,10 +212,11 @@ class COCO(object):
     # transform all words to their indices in the dictionary
     def _tranform(self):
         for phase in ["train", "val", "test"]:
-            if phase == "val" or phase == "test":
-                self.transformed_data[phase] = copy.deepcopy(self.preprocessed_data[phase]).drop_duplicates(subset='image_id')
-            else:
-                self.transformed_data[phase] = copy.deepcopy(self.preprocessed_data[phase])
+            # if phase == "val" or phase == "test":
+            #     self.transformed_data[phase] = copy.deepcopy(self.preprocessed_data[phase]).drop_duplicates(subset='image_id')
+            # else:
+            #     self.transformed_data[phase] = copy.deepcopy(self.preprocessed_data[phase])
+            self.transformed_data[phase] = copy.deepcopy(self.preprocessed_data[phase])
             captions_list = self.transformed_data[phase].caption.values.tolist()
             for i in range(len(captions_list)):
                 temp_list = []
