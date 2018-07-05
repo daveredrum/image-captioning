@@ -29,7 +29,7 @@ class COCOCaptionDataset(Dataset):
         # return (model_id, feature, caption, cap_length)
         model_id = self.transformed_data[idx][0]
         caption = self.transformed_data[idx][1]
-        feature = self.transformed_data[idx][2]
+        feature = self.transformed_data[idx][3]
         feature = torch.FloatTensor(feature)
 
         return model_id, feature, caption, len(caption)
