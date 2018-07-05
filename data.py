@@ -19,19 +19,16 @@ from torchvision import transforms, utils
 
 # dataset for coco
 class COCOCaptionDataset(Dataset):
-    def __init__(self, index_path, csv_file, database):
-        self.index = json.load(open(index_path, "r"))
-        self.model_ids = copy.deepcopy(csv_file.image_id.values.tolist())
-        self.caption_lists = copy.deepcopy(csv_file.caption.values.tolist())
-        self.csv_file = copy.deepcopy(csv_file)
-        self.database = h5py.File(database, "r")
+    def __init__(self, transformed_data):
+        self.transformed_data = transformed_data
 
     def __len__(self):
-        return self.csv_file.image_id.count()
+        return len(self.transformed_data)
 
     def __getitem__(self, idx):
         # return (model_id, image_inputs, padded_caption, cap_length)
-        image = self.database["features"][self.index[str(idx)]]
+        
+        image = self.transformed_data[idx][2]
         image = torch.FloatTensor(image)
 
         return str(self.model_ids[idx]), image, self.caption_lists[idx], len(self.caption_lists[idx])
@@ -213,9 +210,8 @@ class COCO(object):
     # transform all words to their indices in the dictionary
     def _tranform(self):
         for phase in ["train", "val", "test"]:
-            transformed_data = {}
+            transformed_data = []
             for image_id in self.preprocessed_data[phase].keys():
-                transformed_data[image_id] = []
                 for item in self.preprocessed_data[phase][image_id]:
                     caption = []
                     for word in item[0].split(" "):
@@ -226,8 +222,9 @@ class COCO(object):
                             caption.append(self.dict_word2idx["<UNK>"])
                     
                     # store
-                    transformed_data[image_id].append(
+                    transformed_data.append(
                         [
+                            image_id,
                             caption,
                             item[1],
                             item[2]
