@@ -1,8 +1,8 @@
 python train.py \
---train_size=100 \
---val_size=10 \
---test=10 \
---epoch=10 \
+--train_size=-1 \
+--val_size=-1 \
+--test=-1 \
+--epoch=50 \
 --verbose=1000 \
 --learning_rate=2e-4 \
 --weight_decay=1e-5 \

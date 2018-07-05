@@ -537,5 +537,9 @@ class EncoderDecoderSolver():
         writer.export_scalars_to_json("logs/all_scalars.json")
         writer.close()
 
+        if not best_models['encoder'] or not best_models['decoder']:
+            best_models['encoder'] = encoder
+            best_models['decoder'] = decoder
+
         return best_models['encoder'], best_models['decoder']
                 
