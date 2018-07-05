@@ -194,8 +194,6 @@ class COCO(object):
                     caption = '<START> ' + caption
                     # add end symbol
                     caption += ' <END>'
-                    # filter out empty element
-                    caption = filter(None, caption)
                     
                     # store
                     preprocessed_data[image_id].append(
