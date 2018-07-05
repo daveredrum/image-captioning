@@ -20,7 +20,7 @@ def main(args):
     coco_size = configs.COCO_SIZE
     coco_root = configs.COCO_ROOT
     for phase in phases:
-        print("phase: ", phase)
+        print("\nphase: ", phase)
         print()
         # settings
         print("creating database...")
@@ -59,21 +59,13 @@ def main(args):
         # shuffle the dataset
         coco_csv.to_csv(os.path.join(coco_root, "preprocessed", configs.COCO_CAPTION.format(phase)), index=False)
         coco_paths = coco_csv.file_name.drop_duplicates().values.tolist()
-        # create indices
-        print("creating indices for images...")
-        print()
-        index = {coco_paths[i]: i for i in range(len(coco_paths))}
         __all = coco_csv.file_name.values.tolist()
-        mapping = {i: index[__all[i]] for i in range(len(__all))}
-        print("images:", len(index.keys()))
-        print("pairs:", len(mapping.keys()))
-        print("\nsaving indices...")
-        print()
-        json.dump(mapping, open(os.path.join(coco_root, "preprocessed", configs.COCO_INDEX.format(phase), "w")))
+        print("images:", len(coco_paths))
+        print("pairs:", len(__all))
 
 
         # processing images
-        print("preprocessing the images...")
+        print("\npreprocessing the images...")
         print()
         dataset = database.create_dataset("images", (len(coco_paths), 3 * coco_size * coco_size), dtype="float")
         trans = transforms.Compose([

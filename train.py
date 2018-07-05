@@ -31,10 +31,12 @@ def main(args):
     batch_size = args.batch_size
     model_type = "coco"
     weight_decay = args.weight_decay
-    if args.attention == "true":
-        attention = True
-    elif args.attention == "false":
-        attention = False
+    attention = args.attention
+    if args.attention == 'att2all' or args.attention == 'att2in':
+        attention_s = args.attention
+    else:
+        attention = None
+        attention_s = 'noattention'
     if args.evaluation == "true":
         evaluation = True
     elif args.evaluation == "false":
@@ -58,16 +60,16 @@ def main(args):
     print("\npreparing data....")
     print()
     coco = COCO(
-        # for training
-        pandas.read_csv(os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_CAPTION.format("train"))), 
-        pandas.read_csv(os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_CAPTION.format("val"))),
-        pandas.read_csv(os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_CAPTION.format("test"))),
-        [train_size, val_size, test_size]
-        # # for debugging
-        # pandas.read_csv(os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_CAPTION.format("train"))), 
-        # pandas.read_csv(os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_CAPTION.format("train"))), 
-        # pandas.read_csv(os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_CAPTION.format("train"))),
-        # [train_size, val_size, test_size]
+        [
+            pickle.load(open(os.path.join("data", configs.COCO_EXTRACTED.format("train", pretrained)), 'rb')),
+            pickle.load(open(os.path.join("data", configs.COCO_EXTRACTED.format("val", pretrained)), 'rb')),
+            pickle.load(open(os.path.join("data", configs.COCO_EXTRACTED.format("test", pretrained)), 'rb'))
+        ],
+        [
+            train_size, 
+            val_size, 
+            test_size
+        ]
     )
     # split data
     train_captions = coco.transformed_data['train']
@@ -144,10 +146,10 @@ def main(args):
     if attention:
         if pretrained == "vgg":
             print("initializing decoder with attention....")
-            decoder = AttentionDecoder2D(batch_size, input_size, hidden_size, 512, 14, num_layer).cuda()
+            decoder = AttentionDecoder2D(attention, batch_size, input_size, hidden_size, 512, 14, num_layer).cuda()
         elif pretrained == "resnet":
             print("initializing decoder with attention....")
-            decoder = AttentionDecoder2D(batch_size, input_size, hidden_size, 2048, 7, num_layer).cuda()
+            decoder = AttentionDecoder2D(attention, batch_size, input_size, hidden_size, 2048, 7, num_layer).cuda()
     else:
         print("initializing decoder without attention....")        
         decoder = Decoder(input_size, hidden_size, num_layer).cuda()
@@ -189,10 +191,7 @@ def main(args):
     # training
     print("start training....")
     print()
-    if attention:
-        settings = "%s_%s_%s_trs%d_vs%d_ts%d_e%d_lr%f_wd%f_bs%d_vocal%d_beam%d" % (model_type, model_name, "attention", train_size, val_size, test_size, epoch, lr, weight_decay, batch_size, input_size, beam_size)
-    else:
-        settings = "%s_%s_%s_trs%d_vs%d_ts%d_e%d_lr%f_wd%f_bs%d_vocal%d_beam%d" % (model_type, model_name, "noattention", train_size, val_size, test_size, epoch, lr, weight_decay, batch_size, input_size, beam_size)
+    settings = "%s_%s_%s_trs%d_vs%d_ts%d_e%d_lr%f_wd%f_bs%d_vocal%d_beam%d" % (model_type, model_name, attention_s, train_size, val_size, test_size, epoch, lr, weight_decay, batch_size, input_size, beam_size)
     encoder_decoder_solver = EncoderDecoderSolver(optimizer, criterion, model_type, settings)
     encoder, decoder = encoder_decoder_solver.train(encoder, decoder, dataloader, corpus, dict_word2idx, dict_idx2word, epoch, verbose, model_type, attention, beam_size)
 
@@ -375,7 +374,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=50, help="batch size")
     parser.add_argument("--gpu", type=str, help="specify the graphic card")
     parser.add_argument("--pretrained", type=str, default=None, help="vgg/resnet")
-    parser.add_argument("--attention", type=str, default="false", help="true/false")
+    parser.add_argument("--attention", type=str, default='none', help="att2all/att2in/none")
     parser.add_argument("--evaluation", type=str, default="false", help="true/false")
     args = parser.parse_args()
     main(args)

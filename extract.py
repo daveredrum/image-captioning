@@ -7,6 +7,7 @@ import data
 import time
 import math
 import os
+import pickle
 import argparse
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
@@ -36,26 +37,56 @@ def main(args):
         dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=False)
         if not os.path.exists("data/"):
             os.mkdir("data/")
-        database = h5py.File(os.path.join("data", configs.COCO_FEATURE.format(phase, args.pretrained)), "w", libver='latest')
-        if args.pretrained == "vgg":
-            storage = database.create_dataset("features", (len(dataset), 512 * 14 * 14), dtype="float")
-        elif args.pretrained == "resnet":
-            storage = database.create_dataset("features", (len(dataset), 2048 * 7 * 7), dtype="float")
+        feature_path = os.path.join("data", configs.COCO_EXTRACTED.format(phase, args.pretrained))
+        preprocessed_csv = pd.read_csv(os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_CAPTION.format(phase)))
+        
+        # creat index
+        # from preprocessed to raw
+        __all = preprocessed_csv.image_id.values.tolist()
+        image_ids = preprocessed_csv.image_id.drop_duplicates().values.tolist()
+        index = {image_ids[i]: i for i in range(len(image_ids))}
+        mapping = {i: index[__all[i]] for i in range(len(__all))}
         offset = 0
         print("extracting...")
         print()
+        storage = []
         for images in dataloader:
             start_since = time.time()
             images = Variable(images).cuda()
             features = model(images)
             batch_size = features.size(0)
             for idx in range(batch_size):
-                storage[offset + idx] = features[idx].view(-1).data.cpu().numpy()
+                storage.append(features[idx].view(-1).data.cpu().numpy())
             offset += batch_size
             exetime_s = time.time() - start_since
             eta_s = exetime_s * (len(dataset) - offset)
             eta_m = math.floor(eta_s / 60)
-            print("preprocessed and stored: %d, ETA: %dm %ds" % (offset, eta_m, eta_s - eta_m * 60))
+            print("preprocessed: %d, ETA: %dm %ds" % (offset, eta_m, eta_s - eta_m * 60))
+
+        print("\nprocessing...\n")
+        extracted = {}
+        for i, item in enumerate(preprocessed_csv.values.tolist()):
+            image_id = str(item[0])
+            if image_id in extracted.keys():
+                extracted[image_id].append(
+                    [
+                        item[1],
+                        item[2],
+                        storage[mapping[i]]
+                    ]
+                )
+            else:
+                extracted[image_id] = [
+                    [
+                        item[1],
+                        item[2],
+                        storage[mapping[i]]
+                    ]
+                ]
+        
+        print("storing..\n")
+        pickle.dump(extracted, open(feature_path, 'wb'))
+        
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
