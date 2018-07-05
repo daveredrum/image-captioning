@@ -72,39 +72,17 @@ def main(args):
         ]
     )
     # split data
-    train_captions = coco.transformed_data['train']
-    val_captions = coco.transformed_data['val']
-    test_captions = coco.transformed_data['test']
+    train_transformed = coco.transformed_data['train']
+    val_transformed = coco.transformed_data['val']
+    test_transformed = coco.transformed_data['test']
     dict_idx2word = coco.dict_idx2word
     dict_word2idx = coco.dict_word2idx
     corpus = coco.corpus
     # prepare the dataloader
     if pretrained:
-        train_ds = COCOCaptionDataset(
-            os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_INDEX.format("train")), 
-            train_captions, 
-            database=os.path.join("data", configs.COCO_FEATURE.format("train", pretrained))
-        )
-        val_ds = COCOCaptionDataset(
-            # for training
-            os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_INDEX.format("val")), 
-            val_captions,
-            database=os.path.join("data", configs.COCO_FEATURE.format("val", pretrained))
-            # # for debugging
-            # os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_INDEX.format("train")), 
-            # val_captions,
-            # database=os.path.join("data", configs.COCO_FEATURE.format("train", pretrained))
-        )
-        test_ds = COCOCaptionDataset(
-            # for training
-            os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_INDEX.format("test")), 
-            test_captions, 
-            database=os.path.join("data", configs.COCO_FEATURE.format("test", pretrained))
-            # # for debugging
-            # os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_INDEX.format("test")), 
-            # val_captions,
-            # database=os.path.join("data", configs.COCO_FEATURE.format("train", pretrained))
-        )
+        train_ds = COCOCaptionDataset(train_transformed)
+        val_ds = COCOCaptionDataset(val_transformed)
+        test_ds = COCOCaptionDataset(test_transformed)
         train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn)
         val_dl = DataLoader(val_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn)
         test_dl = DataLoader(test_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn)

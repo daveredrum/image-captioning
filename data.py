@@ -26,12 +26,13 @@ class COCOCaptionDataset(Dataset):
         return len(self.transformed_data)
 
     def __getitem__(self, idx):
-        # return (model_id, image_inputs, padded_caption, cap_length)
-        
-        image = self.transformed_data[idx][2]
-        image = torch.FloatTensor(image)
+        # return (model_id, feature, caption, cap_length)
+        model_id = self.transformed_data[idx][0]
+        caption = self.transformed_data[idx][1]
+        feature = self.transformed_data[idx][2]
+        feature = torch.FloatTensor(feature)
 
-        return str(self.model_ids[idx]), image, self.caption_lists[idx], len(self.caption_lists[idx])
+        return model_id, feature, caption, len(caption)
 
 def collate_fn(data):
     '''
