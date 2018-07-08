@@ -6,7 +6,7 @@ python train.py \
 --verbose=1000 \
 --learning_rate=2e-4 \
 --weight_decay=1e-5 \
---batch_size=100 \
+--batch_size=128 \
 --gpu=2 \
 --pretrained=resnet \
 --attention=att2all \

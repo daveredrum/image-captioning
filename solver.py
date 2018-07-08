@@ -346,7 +346,7 @@ class EncoderDecoderSolver():
             train_cider, _ = capcider.Cider().compute_score(references["train"], candidates["train"])
             val_cider, _ = capcider.Cider().compute_score(references["val"], candidates["val"])
             # reduce the learning rate on plateau if training loss if training loss is small
-            if log['train_loss'] <= 1.7:
+            if log['train_loss'] <= 2.0:
                 scheduler.step(val_cider)
             # # evaluate meteor
             # try:
@@ -509,7 +509,7 @@ class EncoderDecoderSolver():
             self.log[epoch_id] = log
             
             # best
-            if log['train_loss'] <= 1.7 and log['val_cider'] > best_scores["cider"]:
+            if log['train_loss'] <= 2.0 and log['val_cider'] > best_scores["cider"]:
                 best_info['epoch_id'] = epoch_id + 1
                 best_info['loss'] = log['train_loss']
                 best_scores['bleu_1'] = log['val_bleu_1']
