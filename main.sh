@@ -9,5 +9,5 @@ python train.py \
 --batch_size=256 \
 --gpu=2 \
 --pretrained=resnet \
---attention=att2in \
+--attention=att2all \
 --evaluation=true
