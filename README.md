@@ -56,6 +56,12 @@ For the model with attention.
 ### Bad captions
 ![alt text](https://github.com/daveredrum/image-captioning/blob/master/demo/low.png)
 
+## Attention
+### Good results 1
+![alt text](https://github.com/daveredrum/image-captioning/blob/master/demo/attention_1.png)
+### Good results 2
+![alt text](https://github.com/daveredrum/image-captioning/blob/master/demo/attention_2.png)
+
 ## Performance
 |Model|BLEU-1|BLEU-2|BLEU-3|BLEU-4|CIDEr|
 |---|---|---|---|---|---|
