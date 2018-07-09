@@ -74,6 +74,7 @@ python show_attention.py --phase=test --pretrained=resnet --train_size=-1 --val_
 |__ResNet152 <br/> LSTM__|__0.720__|__0.536__|__0.388__|__0.286__|__0.805__|
 |__ResNet152 <br/> Att2in <br/> LSTM__|__0.708__|__0.520__|__0.370__|__0.265__|__0.757__|
 |__ResNet152 <br/> Att2all <br/> LSTM__|__0.707__|__0.517__|__0.366__|__0.264__|__0.743__|
+|__ResNet152 <br/> Spatial attention<br/> LSTM__|__0.729__|__0.547__|__0.397__|__0.292__|__0.808__|
 |NeuralTalk2|0.625|0.45|0.321|0.23|0.66|
 |Show and Tell|0.666|0.461|0.329|0.27|-|
 |Show, Attend and Tell|0.707|0.492|0.344|0.243|-|
@@ -87,3 +88,4 @@ python show_attention.py --phase=test --pretrained=resnet --train_size=-1 --val_
 > |__ResNet152 <br/> LSTM__|-1|-1|2e-4|0|512|7|0|
 > |__ResNet152 <br/> Att2in <br/> LSTM__|-1|-1|2e-4|1e-5|100|7|0|
 > |__ResNet152 <br/> Att2all <br/> LSTM__|-1|-1|2e-4|1e-5|100|7|0|
+> |__ResNet152 <br/> Spatial attention <br/> LSTM__|-1|-1|2e-4|1e-5|256|7|0|
