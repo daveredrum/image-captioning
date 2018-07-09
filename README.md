@@ -47,6 +47,9 @@ Note that the `train_size` must match the size of images for training
 
 ### 5. Visualize attention weights
 For the model with attention.
+```bash
+python show_attention.py --phase=test --pretrained=resnet --train_size=-1 --val_size=-1 --test_size=-1 --num=10 --encoder=<path_to_encoder> --decoder=<path_to_decoder> --gpu=0
+```
 
 ## Results
 ### Good captions
