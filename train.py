@@ -158,12 +158,17 @@ def main(args):
     # prepare the training parameters
     if pretrained:
         if attention:
-            params = list(decoder.parameters()) + list(encoder.global_mapping.parameters()) + list(encoder.area_mapping.parameters()) + list(encoder.area_bn.parameters())
+            # params = list(decoder.parameters()) + list(encoder.global_mapping.parameters()) + list(encoder.area_mapping.parameters()) + list(encoder.area_bn.parameters())
+            optimizer = optim.Adam([
+                {'params': list(encoder.global_mapping.parameters()) + list(encoder.area_mapping.parameters()) + list(encoder.area_bn.parameters()), 'lr': 0.1 * lr},
+                {'params': list(decoder.parameters())}
+            ], lr=lr, weight_decay=weight_decay)
         else:
             params = list(decoder.parameters()) + list(encoder.output_layer.parameters())
+            optimizer = optim.Adam(params, lr=lr, weight_decay=weight_decay)
     else:
         params = list(decoder.parameters()) + list(encoder.conv_layer.parameters()) + list(encoder.fc_layer.parameters())
-    optimizer = optim.Adam(params, lr=lr, weight_decay=weight_decay)
+    # optimizer = optim.Adam(params, lr=lr, weight_decay=weight_decay)
     criterion = nn.CrossEntropyLoss(ignore_index=0)
 
     # training
@@ -352,7 +357,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=50, help="batch size")
     parser.add_argument("--gpu", type=str, help="specify the graphic card")
     parser.add_argument("--pretrained", type=str, default=None, help="vgg/resnet")
-    parser.add_argument("--attention", type=str, default='none', help="att2all/att2in/none")
+    parser.add_argument("--attention", type=str, default='none', help="att2all/att2in/spatial/none")
     parser.add_argument("--evaluation", type=str, default="false", help="true/false")
     args = parser.parse_args()
     main(args)

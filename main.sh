@@ -4,10 +4,10 @@ python train.py \
 --test=-1 \
 --epoch=20 \
 --verbose=500 \
---learning_rate=2e-4 \
---weight_decay=1e-5 \
+--learning_rate=5e-4 \
+--weight_decay=1e-4 \
 --batch_size=256 \
---gpu=1 \
+--gpu=2 \
 --pretrained=resnet \
---attention=att2in \
+--attention=att2all \
 --evaluation=true

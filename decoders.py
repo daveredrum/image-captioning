@@ -236,6 +236,7 @@ class AttentionDecoder2D(nn.Module):
     def __init__(self, attention, batch_size, input_size, hidden_size, visual_channels, visual_size, num_layers=1, cuda_flag=True):
         super(AttentionDecoder2D, self).__init__()
         # basic settings
+        self.attention = attention
         self.batch_size = batch_size
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -267,8 +268,10 @@ class AttentionDecoder2D(nn.Module):
             self.lstm_layer_1 = Att2AllLSTMCell(2 * self.hidden_size, self.hidden_size)
         elif attention == 'att2in':
             self.lstm_layer_1 = Att2InLSTMCell(2 * self.hidden_size, self.hidden_size)
-        else:
+        elif attention == 'spatial':
             self.lstm_layer_1 = nn.LSTMCell(2 * self.hidden_size, self.hidden_size)
+        else:
+            raise Exception('invalid attention type, terminating...')
         
         # output layer
         self.output_layer = nn.Sequential(
@@ -297,24 +300,26 @@ class AttentionDecoder2D(nn.Module):
         seq_length = caption_inputs.size(1)
         decoder_outputs = []
         for step in range(seq_length):
-            # embedded = self.embedding(caption_inputs[:, step])
-            # lstm_input = torch.cat((embedded, global_features), dim=1)
-            # states = self.lstm_layer_1(lstm_input, states)
-            # lstm_outputs = states[0]
-            # attention_weights = self.attention(area_features, states)
-            # attended = torch.sum(area_features * attention_weights.unsqueeze(1), 2)
-            # outputs = torch.cat((attended, lstm_outputs), dim=1)
-            # outputs = self.output_layer(outputs).unsqueeze(1)
-            # decoder_outputs.append(outputs)
-            embedded = self.embedding(caption_inputs[:, step])
-            lstm_input = torch.cat((embedded, global_features), dim=1)
-            attention_weights = self.attention(area_features, states)
-            attended = torch.sum(area_features * attention_weights.unsqueeze(1), 2)
-            states = self.lstm_layer_1(lstm_input, states, attended)
-            lstm_outputs = states[0]
-            outputs = torch.cat((attended, lstm_outputs), dim=1)
-            outputs = self.output_layer(outputs).unsqueeze(1)
-            decoder_outputs.append(outputs)
+            if self.attention == 'spatial':
+                embedded = self.embedding(caption_inputs[:, step])
+                lstm_input = torch.cat((embedded, global_features), dim=1)
+                states = self.lstm_layer_1(lstm_input, states)
+                lstm_outputs = states[0]
+                attention_weights = self.attention(area_features, states)
+                attended = torch.sum(area_features * attention_weights.unsqueeze(1), 2)
+                outputs = torch.cat((attended, lstm_outputs), dim=1)
+                outputs = self.output_layer(outputs).unsqueeze(1)
+                decoder_outputs.append(outputs)
+            else:
+                embedded = self.embedding(caption_inputs[:, step])
+                lstm_input = torch.cat((embedded, global_features), dim=1)
+                attention_weights = self.attention(area_features, states)
+                attended = torch.sum(area_features * attention_weights.unsqueeze(1), 2)
+                states = self.lstm_layer_1(lstm_input, states, attended)
+                lstm_outputs = states[0]
+                outputs = torch.cat((attended, lstm_outputs), dim=1)
+                outputs = self.output_layer(outputs).unsqueeze(1)
+                decoder_outputs.append(outputs)
 
         decoder_outputs = torch.cat(decoder_outputs, dim=1)
 
@@ -322,22 +327,24 @@ class AttentionDecoder2D(nn.Module):
 
     def sample(self, features, caption_inputs, states):
         _, global_features, area_features = features
-        # embedded = self.embedding(caption_inputs)
-        # lstm_input = torch.cat((embedded, global_features), dim=1)
-        # new_states = self.lstm_layer_1(lstm_input, states)
-        # lstm_outputs = new_states[0]
-        # attention_weights = self.attention(area_features, states)
-        # attended = torch.sum(area_features * attention_weights.unsqueeze(1), 2)
-        # outputs = torch.cat((attended, lstm_outputs), dim=1)
-        # outputs = self.output_layer(outputs).unsqueeze(1)
-        embedded = self.embedding(caption_inputs)
-        lstm_input = torch.cat((embedded, global_features), dim=1)
-        attention_weights = self.attention(area_features, states)
-        attended = torch.sum(area_features * attention_weights.unsqueeze(1), 2)
-        new_states = self.lstm_layer_1(lstm_input, states, attended)
-        lstm_outputs = new_states[0]
-        outputs = torch.cat((attended, lstm_outputs), dim=1)
-        outputs = self.output_layer(outputs).unsqueeze(1)
+        if self.attention == 'spatial':
+            embedded = self.embedding(caption_inputs)
+            lstm_input = torch.cat((embedded, global_features), dim=1)
+            new_states = self.lstm_layer_1(lstm_input, states)
+            lstm_outputs = new_states[0]
+            attention_weights = self.attention(area_features, states)
+            attended = torch.sum(area_features * attention_weights.unsqueeze(1), 2)
+            outputs = torch.cat((attended, lstm_outputs), dim=1)
+            outputs = self.output_layer(outputs).unsqueeze(1)
+        else:
+            embedded = self.embedding(caption_inputs)
+            lstm_input = torch.cat((embedded, global_features), dim=1)
+            attention_weights = self.attention(area_features, states)
+            attended = torch.sum(area_features * attention_weights.unsqueeze(1), 2)
+            new_states = self.lstm_layer_1(lstm_input, states, attended)
+            lstm_outputs = new_states[0]
+            outputs = torch.cat((attended, lstm_outputs), dim=1)
+            outputs = self.output_layer(outputs).unsqueeze(1)
 
         return outputs, new_states, attention_weights
 
