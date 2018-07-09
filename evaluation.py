@@ -147,10 +147,10 @@ def main(args):
     bleu = {i:{} for i in beam_size}
     cider = {i:{} for i in beam_size}
     rouge = {i:{} for i in beam_size}
-    if os.path.exists("outputs/scores/{}.json".format(outname)):
+    if os.path.exists("outputs/results/{}.json".format(outname)):
         print("loading existing results...")
         print()
-        candidates = json.load(open("outputs/scores/{}.json".format(outname)))
+        candidates = json.load(open("outputs/results/{}.json".format(outname)))
     else:
         print("\nevaluating with beam search...")
         print()
@@ -173,22 +173,31 @@ def main(args):
                     else:
                         candidates[bs][model_id].append(output)
         # save results
-        json.dump(candidates, open("outputs/scores/{}.json".format(outname), 'w'))
+        json.dump(candidates, open("outputs/results/{}.json".format(outname), 'w'))
 
-    for bs in beam_size:
-        # compute
-        bleu[bs] = capbleu.Bleu(4).compute_score(corpus, candidates[bs])
-        cider[bs] = capcider.Cider().compute_score(corpus, candidates[bs])
-        rouge[bs] = caprouge.Rouge().compute_score(corpus, candidates[bs])
-        # report
-        print("----------------------Beam_size: {}-----------------------".format(bs))
-        print("[BLEU-1] Mean: {:.4f}, Max: {:.4f}, Min: {:.4f}".format(bleu[bs][0][0], max(bleu[bs][1][0]), min(bleu[bs][1][0])))
-        print("[BLEU-2] Mean: {:.4f}, Max: {:.4f}, Min: {:.4f}".format(bleu[bs][0][1], max(bleu[bs][1][1]), min(bleu[bs][1][1])))
-        print("[BLEU-3] Mean: {:.4f}, Max: {:.4f}, Min: {:.4f}".format(bleu[bs][0][2], max(bleu[bs][1][2]), min(bleu[bs][1][2])))
-        print("[BLEU-4] Mean: {:.4f}, Max: {:.4f}, Min: {:.4f}".format(bleu[bs][0][3], max(bleu[bs][1][3]), min(bleu[bs][1][3])))
-        print("[CIDEr] Mean: {:.4f}, Max: {:.4f}, Min: {:.4f}".format(cider[bs][0], max(cider[bs][1]), min(cider[bs][1])))
-        print("[ROUGE-L] Mean: {:.4f}, Max: {:.4f}, Min: {:.4f}".format(rouge[bs][0], max(rouge[bs][1]), min(rouge[bs][1])))
-        print()
+    with open("outputs/scores/{}.txt".format(outname), 'w') as f:
+        for bs in beam_size:
+            # compute
+            bleu[bs] = capbleu.Bleu(4).compute_score(corpus, candidates[bs])
+            cider[bs] = capcider.Cider().compute_score(corpus, candidates[bs])
+            rouge[bs] = caprouge.Rouge().compute_score(corpus, candidates[bs])
+            # report
+            print("----------------------Beam_size: {}-----------------------".format(bs))
+            print("[BLEU-1] Mean: {:.4f}, Max: {:.4f}, Min: {:.4f}".format(bleu[bs][0][0], max(bleu[bs][1][0]), min(bleu[bs][1][0])))
+            print("[BLEU-2] Mean: {:.4f}, Max: {:.4f}, Min: {:.4f}".format(bleu[bs][0][1], max(bleu[bs][1][1]), min(bleu[bs][1][1])))
+            print("[BLEU-3] Mean: {:.4f}, Max: {:.4f}, Min: {:.4f}".format(bleu[bs][0][2], max(bleu[bs][1][2]), min(bleu[bs][1][2])))
+            print("[BLEU-4] Mean: {:.4f}, Max: {:.4f}, Min: {:.4f}".format(bleu[bs][0][3], max(bleu[bs][1][3]), min(bleu[bs][1][3])))
+            print("[CIDEr] Mean: {:.4f}, Max: {:.4f}, Min: {:.4f}".format(cider[bs][0], max(cider[bs][1]), min(cider[bs][1])))
+            print("[ROUGE-L] Mean: {:.4f}, Max: {:.4f}, Min: {:.4f}".format(rouge[bs][0], max(rouge[bs][1]), min(rouge[bs][1])))
+            print()
+            # write report
+            f.write("----------------------Beam_size: {}-----------------------\n".format(bs))
+            f.write("[BLEU-1] Mean: {:.4f}, Max: {:.4f}, Min: {:.4f}\n".format(bleu[bs][0][0], max(bleu[bs][1][0]), min(bleu[bs][1][0])))
+            f.write("[BLEU-2] Mean: {:.4f}, Max: {:.4f}, Min: {:.4f}\n".format(bleu[bs][0][1], max(bleu[bs][1][1]), min(bleu[bs][1][1])))
+            f.write("[BLEU-3] Mean: {:.4f}, Max: {:.4f}, Min: {:.4f}\n".format(bleu[bs][0][2], max(bleu[bs][1][2]), min(bleu[bs][1][2])))
+            f.write("[BLEU-4] Mean: {:.4f}, Max: {:.4f}, Min: {:.4f}\n".format(bleu[bs][0][3], max(bleu[bs][1][3]), min(bleu[bs][1][3])))
+            f.write("[CIDEr] Mean: {:.4f}, Max: {:.4f}, Min: {:.4f}\n".format(cider[bs][0], max(cider[bs][1]), min(cider[bs][1])))
+            f.write("[ROUGE-L] Mean: {:.4f}, Max: {:.4f}, Min: {:.4f}\n\n".format(rouge[bs][0], max(rouge[bs][1]), min(rouge[bs][1])))
     
     # save figs
     report = Report(corpus, candidates, cider, num)

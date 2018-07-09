@@ -116,7 +116,7 @@ def main(args):
         # visualize attention weights
         print("visualizing attention weights...\n")
         for i in range(len(pairs)):
-            plt.subplot2grid((num_row, num_col), (i // num_row + 1, i % num_col))
+            plt.subplot2grid((num_row, num_col), (i // num_col + 1, i % num_col))
             plt.imshow(pairs[i][2].data.cpu().numpy())
             plt.text(80, 250, pairs[i][0], fontsize=14)
             plt.axis('off')

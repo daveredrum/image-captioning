@@ -7,7 +7,7 @@ python train.py \
 --learning_rate=5e-4 \
 --weight_decay=1e-4 \
 --batch_size=256 \
---gpu=2 \
+--gpu=3 \
 --pretrained=resnet \
---attention=att2all \
+--attention=spatial \
 --evaluation=true
