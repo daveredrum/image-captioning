@@ -28,7 +28,7 @@ class EncoderDecoderSolver():
 
     def train(self, encoder, decoder, dataloader, references, dict_word2idx, dict_idx2word, epoch, verbose, model_type, attention, beam_size=3):
         # setup tensorboard
-        writer = SummaryWriter(log_dir="logs/%s" % self.settings)
+        writer = SummaryWriter(log_dir="outputs/logs/%s" % self.settings)
         scheduler = ReduceLROnPlateau(self.optimizer, factor=0.8, patience=3, threshold=0.001)
         best_info = {
             'epoch_id': 0,
@@ -534,7 +534,7 @@ class EncoderDecoderSolver():
         print()
 
         # export scalar data to JSON for external processing
-        writer.export_scalars_to_json("logs/all_scalars.json")
+        writer.export_scalars_to_json("outputs/logs/all_scalars.json")
         writer.close()
 
         if not best_models['encoder'] or not best_models['decoder']:

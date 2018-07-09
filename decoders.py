@@ -9,6 +9,7 @@ from torch.nn.utils.rnn import pack_padded_sequence
 import torchvision.models as torchmodels
 import torch.nn.functional as F
 from torch.nn import Parameter
+import configs
 
 
 # decoder without attention
@@ -421,7 +422,7 @@ class EncoderDecoder():
 
 # for encoder-decoder pipeline with attention
 class AttentionEncoderDecoder():
-    def __init__(self, encoder_path, decoder_path, cuda_flag=True):
+    def __init__(self, encoder_path, decoder_path, pretrained, cuda_flag=True):
         if cuda_flag:
             self.encoder = torch.load(encoder_path).cuda()
             self.decoder = torch.load(decoder_path).cuda()
@@ -432,13 +433,21 @@ class AttentionEncoderDecoder():
         self.encoder.eval()
         self.decoder.eval()
 
+        # set size
+        if pretrained == 'vgg':
+            self.size = 14
+        elif pretrained == 'resnet':
+            self.size = 7
+        else:
+            raise Exception('invalid name for pretrained model, terminating...')
+
     def generate_text(self, image_inputs, dict_word2idx, dict_idx2word, max_length):
         caption_inputs = Variable(torch.LongTensor(np.reshape(np.array(dict_word2idx["<START>"]), (1)))).cuda()
         visual_contexts = self.encoder(image_inputs)
         # sample text indices via greedy search
         sampled = []
         states = self.decoder.init_hidden(visual_contexts[0])
-        for i in range(max_length):
+        for _ in range(max_length):
             outputs, states, _ = self.decoder.sample(visual_contexts, caption_inputs, states)
             # outputs = (1, 1, input_size)
             predicted = outputs.max(2)[1]
@@ -466,16 +475,15 @@ class AttentionEncoderDecoder():
         # sample text indices via greedy search
         pairs = []
         states = self.decoder.init_hidden(visual_contexts[0])
-        for i in range(max_length):
+        for _ in range(max_length):
             outputs, states, attention_weights = self.decoder.sample(visual_contexts, caption_inputs, states)
             # attentions = (visual_size, visual_size)
             predicted = outputs.max(2)[1]
             # predicted = (1, 1)
             caption_inputs = predicted.view(1)
             word = dict_idx2word[predicted.cpu().numpy()[0][0]]
-            up_weights = F.upsample_bilinear(attention_weights.view(1, 1, visual_contexts[0].size(2), visual_contexts[0].size(2)), size=(64, 64))
-            pairs.append((word, attention_weights.view(14, 14), up_weights.view(64, 64), states[0][0]))
-            # pairs.append((word, attention_weights.view(14, 14), states[0][0]))
+            up_weights = F.upsample(attention_weights.view(1, 1, visual_contexts[0].size(2), visual_contexts[0].size(2)), size=(configs.COCO_SIZE, configs.COCO_SIZE), mode='bilinear')
+            pairs.append((word, attention_weights.view(self.size, self.size), up_weights.view(configs.COCO_SIZE, configs.COCO_SIZE), states[0][0]))
             if word == '<END>':
                 break
 

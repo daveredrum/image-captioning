@@ -81,9 +81,9 @@ class Report():
                 plt.text(240, 150, 'beam size 7 : ' + self.chosen['7'][q][i][2], fontsize=28)
                 plt.text(240, 180, 'ground truth : ' + self.chosen['7'][q][i][3], fontsize=28)
                 plt.axis('off')
-            if os.path.exists("results/{}".format(path)):
-                os.mkdir("results/{}".format(path))
-            plt.savefig("results/{}/{}.png".format(path, q), bbox_inches="tight")
+            if os.path.exists("outputs/results/{}".format(path)):
+                os.mkdir("outputs/results/{}".format(path))
+            plt.savefig("outputs/results/{}/{}.png".format(path, q), bbox_inches="tight")
 
 
 ###################################################################
@@ -120,19 +120,20 @@ def main(args):
     print("preparing data...")
     print()
     coco = COCO(
-        # for training
-        pandas.read_csv(os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_CAPTION.format("train"))), 
-        pandas.read_csv(os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_CAPTION.format("val"))),
-        pandas.read_csv(os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_CAPTION.format("test"))),
-        [train_size, 0, test_size]
+        [
+            pickle.load(open(os.path.join("data", configs.COCO_EXTRACTED.format("train", pretrained)), 'rb')),
+            pickle.load(open(os.path.join("data", configs.COCO_EXTRACTED.format("val", pretrained)), 'rb')),
+            pickle.load(open(os.path.join("data", configs.COCO_EXTRACTED.format("test", pretrained)), 'rb'))
+        ],
+        [
+            train_size, 
+            0, 
+            test_size
+        ]
     )
     dict_idx2word = coco.dict_idx2word
     corpus = coco.corpus["test"]
-    test_ds = COCOCaptionDataset(
-        os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_INDEX.format("test")), 
-            coco.transformed_data['test'], 
-            database=os.path.join("data", configs.COCO_FEATURE.format("test", pretrained))
-    )
+    test_ds = COCOCaptionDataset(coco.transformed_data['test'])
     test_dl = DataLoader(test_ds, batch_size=batch_size, collate_fn=collate_fn, shuffle=True)
     print("initializing models...")
     print()
@@ -146,10 +147,10 @@ def main(args):
     bleu = {i:{} for i in beam_size}
     cider = {i:{} for i in beam_size}
     rouge = {i:{} for i in beam_size}
-    if os.path.exists("scores/{}.json".format(outname)):
+    if os.path.exists("outputs/scores/{}.json".format(outname)):
         print("loading existing results...")
         print()
-        candidates = json.load(open("scores/{}.json".format(outname)))
+        candidates = json.load(open("outputs/scores/{}.json".format(outname)))
     else:
         print("\nevaluating with beam search...")
         print()
@@ -172,7 +173,7 @@ def main(args):
                     else:
                         candidates[bs][model_id].append(output)
         # save results
-        json.dump(candidates, open("scores/{}.json".format(outname), 'w'))
+        json.dump(candidates, open("outputs/scores/{}.json".format(outname), 'w'))
 
     for bs in beam_size:
         # compute

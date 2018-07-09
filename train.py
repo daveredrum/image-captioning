@@ -177,8 +177,8 @@ def main(args):
     print("saving the best models...\n")
     if not os.path.exists("models"):
         os.mkdir("models")
-    torch.save(encoder, "models/encoder_%s.pth" % settings)
-    torch.save(decoder, "models/decoder_%s.pth" % settings)
+    torch.save(encoder, "outputs/models/encoder_%s.pth" % settings)
+    torch.save(decoder, "outputs/models/decoder_%s.pth" % settings)
 
     # plot the result
     epochs = len(encoder_decoder_solver.log.keys())
@@ -213,7 +213,7 @@ def main(args):
     plt.ylabel('loss')
     plt.xticks(range(1, epochs + 1,  math.floor(epoch / 10)))
     plt.legend()
-    plt.savefig("figs/training_curve_%s.png" % settings, bbox_inches="tight")
+    plt.savefig("outputs/figs/training_curve_%s.png" % settings, bbox_inches="tight")
     # plot the bleu scores
     fig.clf()
     fig.set_size_inches(16,32)
@@ -245,7 +245,7 @@ def main(args):
     plt.ylabel('BLEU-4')
     plt.xticks(range(1, epochs + 1,  math.floor(epoch / 10)))
     plt.legend()
-    plt.savefig("figs/bleu_curve_%s.png" % settings, bbox_inches="tight")
+    plt.savefig("outputs/figs/bleu_curve_%s.png" % settings, bbox_inches="tight")
     # plot the cider scores
     fig.clf()
     fig.set_size_inches(16,8)
@@ -255,7 +255,7 @@ def main(args):
     plt.ylabel('CIDEr')
     plt.xticks(range(1, epochs + 1,  math.floor(epoch / 10)))
     plt.legend()
-    plt.savefig("figs/cider_curve_%s.png" % settings, bbox_inches="tight")
+    plt.savefig("outputs/figs/cider_curve_%s.png" % settings, bbox_inches="tight")
     # # plot the meteor scores
     # fig.clf()
     # fig.set_size_inches(16,8)
@@ -275,7 +275,7 @@ def main(args):
     plt.ylabel('ROUGE_L')
     plt.xticks(range(1, epochs + 1,  math.floor(epoch / 10)))
     plt.legend()
-    plt.savefig("figs/rouge_curve_%s.png" % settings, bbox_inches="tight")
+    plt.savefig("outputs/figs/rouge_curve_%s.png" % settings, bbox_inches="tight")
 
 
 
@@ -295,10 +295,10 @@ def main(args):
         bleu = {i:{} for i in beam_size}
         cider = {i:{} for i in beam_size}
         rouge = {i:{} for i in beam_size}
-        if os.path.exists("scores/{}.json".format(settings)):
+        if os.path.exists("outputs/scores/{}.json".format(settings)):
             print("loading existing results...")
             print()
-            candidates = json.load(open("scores/{}.json".format(settings)))
+            candidates = json.load(open("outputs/scores/{}.json".format(settings)))
         else:
             print("\nevaluating with beam search...")
             print()
@@ -321,7 +321,7 @@ def main(args):
                         else:
                             candidates[bs][model_id].append(output)
             # save results
-            json.dump(candidates, open("scores/{}.json".format(settings), 'w'))
+            json.dump(candidates, open("outputs/scores/{}.json".format(settings), 'w'))
 
         for bs in beam_size:
             # compute

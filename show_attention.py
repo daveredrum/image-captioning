@@ -21,21 +21,20 @@ def main(args):
     # settings
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu 
     os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
-    mode = args.mode
     phase = args.phase
-    index = args.index
     train_size = args.train_size
     val_size = args.val_size
     test_size = args.test_size
     pretrained = args.pretrained
-    outname = "{}_{}".format(args.outname, args.index)
-    encoder_path = "models/{}".format(args.encoder)
-    decoder_path = "models/{}".format(args.decoder)
+    num = args.num
+    encoder_path = "outputs/models/{}".format(args.encoder)
+    decoder_path = "outputs/models/{}".format(args.decoder)
+    dir_name = args.encoder[8:-4]
+    coco_captions = pandas.read_csv(os.path.join(configs.COCO_ROOT, 'preprocessed', configs.COCO_CAPTION.format(phase)))
     print("\n[settings]")
-    print("mode:", mode)
     print("phase:", phase)
-    print("index:", index)
-    print("outname:", outname)
+    print("num:", num)
+    print("dir_name:", dir_name)
     print("encoder_path:", encoder_path)
     print("decoder_path:", decoder_path)
     print()
@@ -43,86 +42,99 @@ def main(args):
     # preprocessing
     print("preparing data....")
     print()
-    captions = COCO(
-        pandas.read_csv(os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_CAPTION.format("train"))), 
-        pandas.read_csv(os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_CAPTION.format("val"))),
-        pandas.read_csv(os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_CAPTION.format("test"))),
-        [train_size, val_size, test_size]
+    coco = COCO(
+        [
+            pickle.load(open(os.path.join("data", configs.COCO_EXTRACTED.format("train", pretrained)), 'rb')),
+            pickle.load(open(os.path.join("data", configs.COCO_EXTRACTED.format("val", pretrained)), 'rb')),
+            pickle.load(open(os.path.join("data", configs.COCO_EXTRACTED.format("test", pretrained)), 'rb'))
+        ],
+        [
+            train_size, 
+            val_size, 
+            test_size
+        ]
     )
     # split data
-    transformed_csv = captions.transformed_data[phase]
-    dict_word2idx = captions.dict_word2idx
-    dict_idx2word = captions.dict_idx2word
-    dataset = COCOCaptionDataset(
-        os.path.join(configs.COCO_ROOT, "preprocessed", configs.COCO_INDEX.format(phase)), 
-        transformed_csv, 
-        database=os.path.join("data", configs.COCO_FEATURE.format(phase, pretrained))
-    )
-    dataloader = DataLoader(dataset, batch_size=1)
+    transformed = coco.transformed_data[phase]
+    dict_word2idx = coco.dict_word2idx
+    dict_idx2word = coco.dict_idx2word
+    dataset = COCOCaptionDataset(transformed)
+    dataloader = DataLoader(dataset, batch_size=1, shuffle=True, collate_fn=collate_fn)
 
     # testing
     print("initializing encoder and decoder...")
     print()
-    encoder_decoder = AttentionEncoderDecoder(encoder_path, decoder_path)
+    encoder_decoder = AttentionEncoderDecoder(encoder_path, decoder_path, pretrained)
 
-    # testing
-    print("generating captions...")
-    print()
-    for i, (model_id, visual_inputs, _, _) in enumerate(dataloader):
-        if i == index:
-            visual_inputs = Variable(visual_inputs).cuda()
-            images = [model_id]
-            descriptions = " ".join(encoder_decoder.generate_text(visual_inputs, dict_word2idx, dict_idx2word, 20))
-            new = []
-            for i, text in enumerate(descriptions.split(" ")):
-                new.append(text)
-                if i != 0 and i % 16 == 0:
-                    new.append("\n")
-            descriptions = [" ".join(new)]
-            pairs = encoder_decoder.visual_attention(visual_inputs, dict_word2idx, dict_idx2word, 20)
-            break
-    descriptions += [pairs[i][0] for i in range(len(pairs))]
-    images += [pairs[i][2] for i in range(len(pairs))]
+    if not os.path.exists("outputs/vis/{}".format(dir_name)):
+            os.mkdir("outputs/vis/{}".format(dir_name))
+    for idx in range(num):
+        # testing
+        print("testing :", idx)
+        print("generating captions...")
+        for i, (model_id, visual_inputs, _, _) in enumerate(dataloader):
+            if i == idx:
+                visual_inputs = Variable(visual_inputs).cuda()
+                descriptions = " ".join(encoder_decoder.generate_text(visual_inputs, dict_word2idx, dict_idx2word, 20))
+                pairs = encoder_decoder.visual_attention(visual_inputs, dict_word2idx, dict_idx2word, 20)
+                break
 
-    # plot testing results
-    if not os.path.exists("results/{}".format(outname)):
-        os.mkdir("results/{}".format(outname))
-    print("saving results...")
-    df = {"step {}".format(i+1): pairs[i][1].view(-1).data.cpu().numpy().tolist() for i in range(len(pairs))}
-    df = pandas.DataFrame(df, columns=['step {}'.format(str(i+1)) for i in range(len(pairs))])
-    df.to_csv("results/{}/{}.csv".format(outname, outname), index=False)
-    plt.switch_backend("agg")
+         # plot testing results
+        outname = "{}_{}".format(dir_name, idx)
+        if not os.path.exists("outputs/vis/{}/{}".format(dir_name, outname)):
+            os.mkdir("outputs/vis/{}/{}".format(dir_name, outname))
+        print("saving results...")
+        df = {"step {}".format(i+1): pairs[i][1].view(-1).data.cpu().numpy().tolist() for i in range(len(pairs))}
+        df = pandas.DataFrame(df, columns=['step {}'.format(str(i+1)) for i in range(len(pairs))])
+        df.to_csv("outputs/vis/{}/{}/{}.csv".format(dir_name, outname, outname), index=False)
 
-    fig = plt.gcf()
-    fig.set_size_inches(8, 4 * len(descriptions))
-    fig.set_facecolor('white')
-    for i in range(len(descriptions)):
-        plt.subplot(len(descriptions), 1, i+1)
-        if i == 0:
-            image_path = transformed_csv.file_name.loc[transformed_csv.image_id == int(images[i][0])].drop_duplicates().iloc[0]
-            image = Image.open(os.path.join(configs.COCO_ROOT, "{}2014".format(phase), image_path)).resize((64, 64))
-            plt.imshow(image)
-            plt.text(80, 32, descriptions[i], fontsize=12)
+        # subplot settings
+        num_col = 4
+        num_row = len(pairs) // num_col + 2
+        subplot_size = 4
+
+        # graph settings
+        plt.switch_backend("agg")
+        fig = plt.figure(dpi=100)
+        fig.set_size_inches(subplot_size * num_col, subplot_size * (num_row + 1))
+        fig.set_facecolor('white')
+        
+        # generate caption results
+        print("visualizing results...")
+        plt.subplot2grid((num_row, num_col), (0, 0))
+        image_path = coco_captions.file_name.loc[coco_captions.image_id == int(model_id[0])].drop_duplicates().iloc[0]
+        if phase == 'val' or phase == 'test':
+            image = Image.open(os.path.join(configs.COCO_ROOT, "{}2014".format('val'), image_path)).resize((configs.COCO_SIZE, configs.COCO_SIZE))
         else:
-            plt.imshow(images[i].data.cpu().numpy())
-            plt.text(80, 32, descriptions[i], fontsize=12)
-            # plt.text(18, 8, descriptions[i], fontsize=12)
-    # fig.tight_layout()
-    plt.savefig("results/{}/{}.png".format(outname, outname), bbox_inches="tight")
-    fig.clf()
+            image = Image.open(os.path.join(configs.COCO_ROOT, "{}2014".format('train'), image_path)).resize((configs.COCO_SIZE, configs.COCO_SIZE))
+        plt.imshow(image)
+        plt.axis('off')
+        plt.subplot2grid((num_row, num_col), (0, 1), colspan=num_col-1)
+        plt.text(0, 0.5, descriptions, fontsize=14)
+        plt.axis('off')
+        
+        # visualize attention weights
+        print("visualizing attention weights...\n")
+        for i in range(len(pairs)):
+            plt.subplot2grid((num_row, num_col), (i // num_row + 1, i % num_col))
+            plt.imshow(pairs[i][2].data.cpu().numpy())
+            plt.text(80, 250, pairs[i][0], fontsize=14)
+            plt.axis('off')
+
+
+        # fig.tight_layout()
+        plt.savefig("outputs/vis/{}/{}/{}.png".format(dir_name, outname, outname), bbox_inches="tight")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", type=str, default="coco", help="source and type of the input data")
     parser.add_argument("--phase", type=str, help="train/val/test")
     parser.add_argument("--pretrained", type=str, help="vgg/resnet")
     parser.add_argument("--train_size", type=int)
     parser.add_argument("--val_size", type=int)
     parser.add_argument("--test_size", type=int)
-    parser.add_argument("--index", type=int, default=0, help="index of the testing image")
+    parser.add_argument("--num", type=int, default=0, help="number of the testing image")
     parser.add_argument("--encoder", type=str, default=None, help="path to the encoder")
     parser.add_argument("--decoder", type=str, default=None, help="path to the decoder")
     parser.add_argument("--gpu", type=str, help="specify the graphic card")
-    parser.add_argument("--outname", type=str, help="output name for the results")
     args = parser.parse_args()
     main(args)
