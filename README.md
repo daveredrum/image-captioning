@@ -63,6 +63,7 @@ python show_attention.py --phase=test --pretrained=resnet --train_size=-1 --val_
 ### Good results
 ![alt text](https://github.com/daveredrum/image-captioning/blob/master/demo/attention_good_1.png)
 ![alt text](https://github.com/daveredrum/image-captioning/blob/master/demo/attention_good_2.png)
+![alt text](https://github.com/daveredrum/image-captioning/blob/master/demo/attention_good_3.png)
 ### Bad results
 ![alt text](https://github.com/daveredrum/image-captioning/blob/master/demo/attention_bad.png)
 
