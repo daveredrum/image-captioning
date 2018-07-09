@@ -124,6 +124,7 @@ def main(args):
 
         # fig.tight_layout()
         plt.savefig("outputs/vis/{}/{}/{}.png".format(dir_name, outname, outname), bbox_inches="tight")
+        fig.clf()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

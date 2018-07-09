@@ -163,8 +163,8 @@ class EncoderDecoderSolver():
                             # optimize
                             self.optimizer.step()
                             log['backward'].append(time.time() - backward_since)
-                            log['train_loss'].append(loss.data[0])
-                            log['train_perplexity'].append(np.exp(loss.data[0]))
+                            log['train_loss'].append(loss.item())
+                            log['train_perplexity'].append(np.exp(loss.item()))
 
                             # report
                             if (iter_id+1) % verbose == 0:
@@ -272,8 +272,8 @@ class EncoderDecoderSolver():
                             clip_grad_value_(self.optimizer, 5)
                             self.optimizer.step()
                             log['backward'].append(time.time() - backward_since)
-                            log['train_loss'].append(loss.data[0])
-                            log['train_perplexity'].append(np.exp(loss.data[0]))
+                            log['train_loss'].append(loss.item())
+                            log['train_perplexity'].append(np.exp(loss.item()))
 
                             # report
                             if (iter_id+1) % verbose == 0:

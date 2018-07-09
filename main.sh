@@ -2,12 +2,12 @@ python train.py \
 --train_size=-1 \
 --val_size=-1 \
 --test=-1 \
---epoch=30 \
---verbose=1000 \
+--epoch=20 \
+--verbose=500 \
 --learning_rate=2e-4 \
 --weight_decay=1e-5 \
 --batch_size=256 \
---gpu=2 \
+--gpu=1 \
 --pretrained=resnet \
---attention=att2all \
+--attention=att2in \
 --evaluation=true

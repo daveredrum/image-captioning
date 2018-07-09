@@ -144,6 +144,8 @@ class COCO(object):
         
         # max dict_size = 10000
         word_list = sorted(word_list.items(), key=operator.itemgetter(1), reverse=True)[:10000]
+        # min_freq = 5 
+        word_list = [(item[0], item[1]) for item in word_list if item[1] >= 5]
         # indexing starts at 4
         self.dict_word2idx = {word_list[i][0]: i+4 for i in range(len(word_list))}
         self.dict_idx2word = {i+4: word_list[i][0] for i in range(len(word_list))}
