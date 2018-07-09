@@ -60,10 +60,10 @@ python show_attention.py --phase=test --pretrained=resnet --train_size=-1 --val_
 ![alt text](https://github.com/daveredrum/image-captioning/blob/master/demo/low.png)
 
 ## Attention
-### Good results 1
-![alt text](https://github.com/daveredrum/image-captioning/blob/master/demo/attention_1.png)
-### Good results 2
-![alt text](https://github.com/daveredrum/image-captioning/blob/master/demo/attention_2.png)
+### Good results
+![alt text](https://github.com/daveredrum/image-captioning/blob/master/demo/attention_good.png)
+### Bad results
+![alt text](https://github.com/daveredrum/image-captioning/blob/master/demo/attention_bad.png)
 
 ## Performance
 |Model|BLEU-1|BLEU-2|BLEU-3|BLEU-4|CIDEr|
