@@ -2,11 +2,11 @@ python train.py \
 --train_size=-1 \
 --val_size=-1 \
 --test=-1 \
---epoch=50 \
+--epoch=30 \
 --verbose=1000 \
 --learning_rate=2e-4 \
 --weight_decay=1e-5 \
---batch_size=128 \
+--batch_size=256 \
 --gpu=2 \
 --pretrained=resnet \
 --attention=att2in \
