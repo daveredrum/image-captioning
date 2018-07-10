@@ -24,7 +24,7 @@ class EncoderDecoderSolver():
         self.model_type = model_type
         self.cuda_flag = cuda_flag
         self.settings = settings
-        self.threshold = {'schedule': 2.0, 'save': 2.5}
+        self.threshold = {'schedule': 2.5, 'save': 2.5}
         self.log = {}
 
     def train(self, encoder, decoder, dataloader, references, dict_word2idx, dict_idx2word, epoch, verbose, model_type, attention, beam_size=3):

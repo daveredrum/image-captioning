@@ -113,7 +113,7 @@ class Attention2D(nn.Module):
             nn.Linear(hidden_size, hidden_size, bias=False),
         )
         self.comp_hidden = nn.Sequential(
-            nn.Linear(hidden_size, hidden_size, bias=False),
+            nn.Linear(hidden_size, 1, bias=False),
         )
         self.output_layer = nn.Sequential(
             nn.Linear(hidden_size, 1, bias=False),
@@ -310,7 +310,7 @@ class AdaptiveLSTMCell(nn.Module):
     # states_c = (batch, hidden_size)
     # states = (states_h, states_c)
     # sentinel = (batch, hidden_size)
-    def forward(self, embedded, states, atteded):
+    def forward(self, embedded, states):
         # unpack states
         states_h, states_c = states
         # forward feed
@@ -333,7 +333,7 @@ class AttentionDecoder2D(nn.Module):
     def __init__(self, attention, batch_size, input_size, hidden_size, visual_channels, visual_size, num_layers=1, cuda_flag=True):
         super(AttentionDecoder2D, self).__init__()
         # basic settings
-        self.attention = attention
+        self.type = attention
         self.batch_size = batch_size
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -400,7 +400,7 @@ class AttentionDecoder2D(nn.Module):
         seq_length = caption_inputs.size(1)
         decoder_outputs = []
         for step in range(seq_length):
-            if self.attention == 'spatial':
+            if self.type == 'spatial':
                 embedded = self.embedding(caption_inputs[:, step])
                 lstm_input = torch.cat((embedded, global_features), dim=1)
                 states = self.lstm_layer_1(lstm_input, states)
@@ -410,14 +410,15 @@ class AttentionDecoder2D(nn.Module):
                 outputs = torch.cat((attended, lstm_outputs), dim=1)
                 outputs = self.output_layer(outputs).unsqueeze(1)
                 decoder_outputs.append(outputs)
-            elif self.attention == 'adaptive':
+            elif self.type == 'adaptive':
                 embedded = self.embedding(caption_inputs[:, step])
                 lstm_input = torch.cat((embedded, global_features), dim=1)
                 states, sentinel = self.lstm_layer_1(lstm_input, states)
                 lstm_outputs = states[0]
-                attention_weights = self.attention(area_features, states, sentinel)
-                attended = torch.sum(area_features * attention_weights[:, :-1].unsqueeze(1), 2)
-                sentinel_scalar = attention_weights[:, -1]
+                weights = self.attention(area_features, states, sentinel)
+                attention_weights = weights[:, :-1]
+                sentinel_scalar = weights[:, -1].unsqueeze(1)
+                attended = torch.sum(area_features * attention_weights.unsqueeze(1), 2)
                 attended = sentinel_scalar * sentinel + (1 - sentinel_scalar) * attended
                 outputs = torch.cat((attended, lstm_outputs), dim=1)
                 outputs = self.output_layer(outputs).unsqueeze(1)
@@ -439,7 +440,7 @@ class AttentionDecoder2D(nn.Module):
 
     def sample(self, features, caption_inputs, states):
         _, global_features, area_features = features
-        if self.attention == 'spatial':
+        if self.type == 'spatial':
             embedded = self.embedding(caption_inputs)
             lstm_input = torch.cat((embedded, global_features), dim=1)
             new_states = self.lstm_layer_1(lstm_input, states)
@@ -448,14 +449,15 @@ class AttentionDecoder2D(nn.Module):
             attended = torch.sum(area_features * attention_weights.unsqueeze(1), 2)
             outputs = torch.cat((attended, lstm_outputs), dim=1)
             outputs = self.output_layer(outputs).unsqueeze(1)
-        elif self.attention == 'adaptive':
+        elif self.type == 'adaptive':
             embedded = self.embedding(caption_inputs)
             lstm_input = torch.cat((embedded, global_features), dim=1)
             new_states, sentinel = self.lstm_layer_1(lstm_input, states)
             lstm_outputs = new_states[0]
-            attention_weights = self.attention(area_features, states, sentinel)
-            attended = torch.sum(area_features * attention_weights[:, :-1].unsqueeze(1), 2)
-            sentinel_scalar = attention_weights[:, -1]
+            weights = self.attention(area_features, states, sentinel)
+            attention_weights = weights[:, :-1]
+            sentinel_scalar = weights[:, -1].unsqueeze(1)
+            attended = torch.sum(area_features * attention_weights.unsqueeze(1), 2)
             attended = sentinel_scalar * sentinel + (1 - sentinel_scalar) * attended
             outputs = torch.cat((attended, lstm_outputs), dim=1)
             outputs = self.output_layer(outputs).unsqueeze(1)

@@ -32,11 +32,12 @@ def main(args):
     model_type = "coco"
     weight_decay = args.weight_decay
     attention = args.attention
-    if args.attention == 'att2all' or args.attention == 'att2in':
-        attention_s = args.attention
-    else:
+    if args.attention == 'none':
         attention = None
         attention_s = 'noattention'
+    else:
+        attention = args.attention
+        attention_s = args.attention
     if args.evaluation == "true":
         evaluation = True
     elif args.evaluation == "false":
@@ -179,8 +180,6 @@ def main(args):
 
     # save model
     print("saving the best models...\n")
-    if not os.path.exists("models"):
-        os.mkdir("models")
     torch.save(encoder, "outputs/models/encoder_%s.pth" % settings)
     torch.save(decoder, "outputs/models/decoder_%s.pth" % settings)
 
@@ -205,8 +204,6 @@ def main(args):
 
     # plot training curve
     print("plot training curves...")
-    if not os.path.exists("figs"):
-        os.mkdir("figs")
     plt.switch_backend("agg")
     fig = plt.gcf()
     fig.set_size_inches(16,8)

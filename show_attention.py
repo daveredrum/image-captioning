@@ -110,7 +110,7 @@ def main(args):
         plt.imshow(image)
         plt.axis('off')
         plt.subplot2grid((num_row, num_col), (0, 1), colspan=num_col-1)
-        plt.text(0, 0.5, descriptions, fontsize=14)
+        plt.text(0, 0.5, descriptions, fontsize=16)
         plt.axis('off')
         
         # visualize attention weights
@@ -118,7 +118,7 @@ def main(args):
         for i in range(len(pairs)):
             plt.subplot2grid((num_row, num_col), (i // num_col + 1, i % num_col))
             plt.imshow(pairs[i][2].data.cpu().numpy())
-            plt.text(80, 250, pairs[i][0], fontsize=14)
+            plt.text(0, 0, pairs[i][0], fontsize=16, color='black', backgroundcolor='white')
             plt.axis('off')
 
 
@@ -130,9 +130,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--phase", type=str, help="train/val/test")
     parser.add_argument("--pretrained", type=str, help="vgg/resnet")
-    parser.add_argument("--train_size", type=int)
-    parser.add_argument("--val_size", type=int)
-    parser.add_argument("--test_size", type=int)
+    parser.add_argument("--train_size", type=int, default=-1)
+    parser.add_argument("--val_size", type=int, default=-1)
+    parser.add_argument("--test_size", type=int, default=-1)
     parser.add_argument("--num", type=int, default=0, help="number of the testing image")
     parser.add_argument("--encoder", type=str, default=None, help="path to the encoder")
     parser.add_argument("--decoder", type=str, default=None, help="path to the decoder")
