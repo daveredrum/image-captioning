@@ -1,7 +1,14 @@
 # image-captioning
-Implementations for image captioning models in PyTorch, currently only supports pretrained ResNet152 and VGG16 with batch normalization.
-Model without attention is implemented from ["show and tell"](https://arxiv.org/pdf/1411.4555.pdf), 
-while the model with attention is from ["show, attend and tell"](https://arxiv.org/pdf/1502.03044.pdf)
+Implementations for image captioning models in PyTorch, different types of attention mechanisms supported. Currently only provides pretrained ResNet152 and VGG16 with batch normalization as encoders.
+
+Model supported: 
+<br/>__FC__ from ["show and tell"](https://arxiv.org/pdf/1411.4555.pdf)
+<br/>__Att2all__ from ["show and tell"](https://arxiv.org/pdf/1411.4555.pdf)
+<br/>__Att2in__ from ["Self-critical Sequence Training for Image Captioning"](https://arxiv.org/pdf/1612.00563.pdf)
+<br/>__Spatial attention__ from ["Knowing When to Look: Adaptive Attention via
+A Visual Sentinel for Image Captioning"](https://arxiv.org/pdf/1411.4555.pdf)
+<br/>__Adaptive attention__ from ["Knowing When to Look: Adaptive Attention via
+A Visual Sentinel for Image Captioning"](https://arxiv.org/pdf/1411.4555.pdf)
 
 Evaluate captions via `capeval/`, which is derived from [tylin/coco-caption](https://github.com/tylin/coco-caption) with minor changes for a better Python 3 support
 
@@ -71,10 +78,10 @@ python show_attention.py --phase=test --pretrained=resnet --train_size=-1 --val_
 |Model|BLEU-1|BLEU-2|BLEU-3|BLEU-4|CIDEr|
 |---|---|---|---|---|---|
 |Baseline (Nearest neighbor)|0.48|0.281|0.166|0.1|0.383|
-|__ResNet152 <br/> LSTM__|__0.720__|__0.536__|__0.388__|__0.286__|__0.805__|
-|__ResNet152 <br/> Att2in <br/> LSTM__|__0.732__|__0.553__|__0.402__|__0.296__|__0.837__|
-|__ResNet152 <br/> Att2all <br/> LSTM__|__0.732__|__0.554__|__0.403__|__0.296__|__0.838__|
-|__ResNet152 <br/> Spatial attention<br/> LSTM__|__0.729__|__0.547__|__0.397__|__0.292__|__0.808__|
+|__FC__|__0.720__|__0.536__|__0.388__|__0.286__|__0.805__|
+|__Att2in__|__0.732__|__0.553__|__0.402__|__0.296__|__0.837__|
+|__Att2all__|__0.732__|__0.554__|__0.403__|__0.296__|__0.838__|
+|__Spatial attention__|__0.729__|__0.547__|__0.397__|__0.292__|__0.808__|
 |NeuralTalk2|0.625|0.45|0.321|0.23|0.66|
 |Show and Tell|0.666|0.461|0.329|0.27|-|
 |Show, Attend and Tell|0.707|0.492|0.344|0.243|-|
@@ -85,7 +92,7 @@ python show_attention.py --phase=test --pretrained=resnet --train_size=-1 --val_
 >
 > |Model|train_size|test_size|learning_rate|weight_decay|batch_size|beam_size|dropout|
 > |---|---|---|---|---|---|---|---|
-> |__ResNet152 <br/> LSTM__|-1|-1|2e-4|0|512|7|0|
-> |__ResNet152 <br/> Att2in <br/> LSTM__|-1|-1|5e-4|1e-4|256|7|0|
-> |__ResNet152 <br/> Att2all <br/> LSTM__|-1|-1|5e-4|1e-4|256|7|0|
-> |__ResNet152 <br/> Spatial attention <br/> LSTM__|-1|-1|5e-4|1e-4|256|7|0|
+> |__FC__|-1|-1|2e-4|0|512|7|0|
+> |__Att2in__|-1|-1|5e-4|1e-4|256|7|0|
+> |__Att2all__|-1|-1|5e-4|1e-4|256|7|0|
+> |__Spatial attention__|-1|-1|5e-4|1e-4|256|7|0|
