@@ -41,14 +41,14 @@ If training on the full dataset is desired, please specify the `train_size` as `
 Immediate evaluation with beam search after training is also available, please set the flag as `true`. 
 The scores are stored in `scores/`
 ```bash
-python train.py --train_size=100 --val_size=10 --test=10 --epoch=30 --verbose=10 --learning_rate=1e-3 --batch_size=10 --gpu=0 --pretrained=resnet --attention=false --evaluation=true
+python train.py --train_size=100 --val_size=10 --test=10 --epoch=30 --verbose=10 --learning_rate=1e-3 --batch_size=10 --gpu=0 --pretrained=resnet --attention=none --evaluation=true
 ```
 
 ### 4. Offline evaluation
 After the training is over, an offline evaluation can be performed.
 All generated captions are stored in `results/`
 ```bash
-python evaluation.py --train_size=100 --test_size=10 --num=3 --batch_size=10 --gpu=10 --pretrained=resnet --attention=false --encoder=<path_to_encoder> --decoder=<path_to_decoder>
+python evaluation.py --train_size=100 --test_size=10 --num=3 --batch_size=10 --gpu=10 --pretrained=resnet --attention=none --encoder=<path_to_encoder> --decoder=<path_to_decoder>
 ```
 Note that the `train_size` must match the size of images for training
 
