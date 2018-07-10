@@ -147,6 +147,60 @@ class Attention2D(nn.Module):
 
         return outputs
 
+# adaptive attention module
+class AdaptiveAttention2D(nn.Module):
+    def __init__(self, visual_channels, hidden_size, visual_flat):
+        super(AdaptiveAttention2D, self).__init__()
+        # basic settings
+        self.visual_channels = visual_channels
+        self.hidden_size = hidden_size
+        self.visual_flat = visual_flat
+        # MLP
+        self.comp_visual = nn.Sequential(
+            nn.Linear(hidden_size, hidden_size, bias=False),
+        )
+        self.comp_hidden = nn.Sequential(
+            nn.Linear(hidden_size, 1, bias=False),
+        )
+        self.comp_sentinel = nn.Sequential(
+            nn.Linear(hidden_size, 1, bias=False),
+        )
+        self.output_layer = nn.Sequential(
+            nn.Linear(hidden_size, 1, bias=False),
+        )
+        # initialize weights
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        for weight in self.parameters():
+            stdv = 1.0 / math.sqrt(weight.size(0))
+            weight.data.uniform_(-stdv, stdv)
+    
+    def forward(self, visual_inputs, states, sentinel):
+        # visual_inputs = (batch_size, visual_flat, visual_channels)
+        feature = visual_inputs.permute(0, 2, 1).contiguous()
+        # get the hidden state
+        hidden = states[0]
+        # in = (batch_size, visual_flat, visual_channels)
+        # out = (batch_size, visual_flat, hidden_size)
+        V = self.comp_visual(feature)
+        # in = (batch_size, hidden_size)
+        # out = (batch_size, 1, 1)
+        H = self.comp_hidden(hidden).unsqueeze(1)
+        # combine
+        Z = F.tanh(V + H)
+        # Z = (batch_size, visual_flat)
+        Z = self.output_layer(Z).squeeze(2)
+        # sentinel outputs
+        # S = (batch_size, 1)
+        S = F.tanh(self.comp_sentinel(sentinel) + self.comp_hidden(hidden))
+        # concat
+        # outputs = (batch_size, visual_flat + 1)
+        outputs = torch.cat((Z, S), dim=1)
+        outputs = F.softmax(outputs, dim=1)
+
+        return outputs
+
 # new LSTM with visual attention context
 class Att2AllLSTMCell(nn.Module):
     def __init__(self, input_size, hidden_size):
@@ -231,6 +285,49 @@ class Att2InLSTMCell(nn.Module):
         return states
 
 
+# LSTM with sentinel gate
+class AdaptiveLSTMCell(nn.Module):
+    def __init__(self, input_size, hidden_size):
+        super(AdaptiveLSTMCell, self).__init__()
+        # basic settings
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        # parameters
+        for gate in ["i", "f", "c", "o", 's']:
+            setattr(self, "w_{}".format(gate), Parameter(torch.Tensor(input_size, hidden_size)))
+            setattr(self, "u_{}".format(gate), Parameter(torch.Tensor(hidden_size, hidden_size)))
+            setattr(self, "b_{}".format(gate), Parameter(torch.Tensor(hidden_size)))
+        # initialize weights
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        for weight in self.parameters():
+            stdv = 1.0 / math.sqrt(weight.size(0))
+            weight.data.uniform_(-stdv, stdv)
+    
+    # inputs = (batch, input_size)
+    # states_h = (batch, hidden_size)
+    # states_c = (batch, hidden_size)
+    # states = (states_h, states_c)
+    # sentinel = (batch, hidden_size)
+    def forward(self, embedded, states, atteded):
+        # unpack states
+        states_h, states_c = states
+        # forward feed
+        i = F.sigmoid(torch.matmul(embedded, self.w_i) + torch.matmul(states_h, self.u_i) + self.b_i)
+        f = F.sigmoid(torch.matmul(embedded, self.w_f) + torch.matmul(states_h, self.u_f) + self.b_f)
+        c_hat = F.tanh(torch.matmul(embedded, self.w_c) + torch.matmul(states_h, self.u_c) + self.b_c)
+        states_c = f * states_c + i * c_hat
+        o = F.sigmoid(torch.matmul(embedded, self.w_o) + torch.matmul(states_h, self.u_o) + self.b_o)
+        states_h = o * F.tanh(states_c)
+        # pack states
+        states = (states_h, states_c)
+        # sentinel gate
+        s_hat = F.sigmoid(torch.matmul(embedded, self.w_s) + torch.matmul(states_h, self.u_s) + self.b_s)
+        sentinel = s_hat * F.tanh(states_c)
+
+        return states, sentinel
+
 # decoder with attention
 class AttentionDecoder2D(nn.Module):
     def __init__(self, attention, batch_size, input_size, hidden_size, visual_channels, visual_size, num_layers=1, cuda_flag=True):
@@ -259,17 +356,20 @@ class AttentionDecoder2D(nn.Module):
         # embedding layer
         self.embedding = nn.Embedding(input_size, hidden_size)
 
-        # attention layer
-        self.attention = Attention2D(self.visual_channels, self.hidden_size, self.visual_flat)
-        # self.attention = Attention2D(self.visual_channels, self.visual_flat)
-
         # LSTM
+        # attention module
         if attention == 'att2all':
+            self.attention = Attention2D(self.visual_channels, self.hidden_size, self.visual_flat)
             self.lstm_layer_1 = Att2AllLSTMCell(2 * self.hidden_size, self.hidden_size)
         elif attention == 'att2in':
+            self.attention = Attention2D(self.visual_channels, self.hidden_size, self.visual_flat)
             self.lstm_layer_1 = Att2InLSTMCell(2 * self.hidden_size, self.hidden_size)
         elif attention == 'spatial':
+            self.attention = Attention2D(self.visual_channels, self.hidden_size, self.visual_flat)
             self.lstm_layer_1 = nn.LSTMCell(2 * self.hidden_size, self.hidden_size)
+        elif attention == 'adaptive':
+            self.attention = AdaptiveAttention2D(self.visual_channels, self.hidden_size, self.visual_flat)
+            self.lstm_layer_1 = AdaptiveLSTMCell(2 * self.hidden_size, self.hidden_size)
         else:
             raise Exception('invalid attention type, terminating...')
         
@@ -310,6 +410,18 @@ class AttentionDecoder2D(nn.Module):
                 outputs = torch.cat((attended, lstm_outputs), dim=1)
                 outputs = self.output_layer(outputs).unsqueeze(1)
                 decoder_outputs.append(outputs)
+            elif self.attention == 'adaptive':
+                embedded = self.embedding(caption_inputs[:, step])
+                lstm_input = torch.cat((embedded, global_features), dim=1)
+                states, sentinel = self.lstm_layer_1(lstm_input, states)
+                lstm_outputs = states[0]
+                attention_weights = self.attention(area_features, states, sentinel)
+                attended = torch.sum(area_features * attention_weights[:, :-1].unsqueeze(1), 2)
+                sentinel_scalar = attention_weights[:, -1]
+                attended = sentinel_scalar * sentinel + (1 - sentinel_scalar) * attended
+                outputs = torch.cat((attended, lstm_outputs), dim=1)
+                outputs = self.output_layer(outputs).unsqueeze(1)
+                decoder_outputs.append(outputs)
             else:
                 embedded = self.embedding(caption_inputs[:, step])
                 lstm_input = torch.cat((embedded, global_features), dim=1)
@@ -334,6 +446,17 @@ class AttentionDecoder2D(nn.Module):
             lstm_outputs = new_states[0]
             attention_weights = self.attention(area_features, states)
             attended = torch.sum(area_features * attention_weights.unsqueeze(1), 2)
+            outputs = torch.cat((attended, lstm_outputs), dim=1)
+            outputs = self.output_layer(outputs).unsqueeze(1)
+        elif self.attention == 'adaptive':
+            embedded = self.embedding(caption_inputs)
+            lstm_input = torch.cat((embedded, global_features), dim=1)
+            new_states, sentinel = self.lstm_layer_1(lstm_input, states)
+            lstm_outputs = new_states[0]
+            attention_weights = self.attention(area_features, states, sentinel)
+            attended = torch.sum(area_features * attention_weights[:, :-1].unsqueeze(1), 2)
+            sentinel_scalar = attention_weights[:, -1]
+            attended = sentinel_scalar * sentinel + (1 - sentinel_scalar) * attended
             outputs = torch.cat((attended, lstm_outputs), dim=1)
             outputs = self.output_layer(outputs).unsqueeze(1)
         else:

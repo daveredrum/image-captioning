@@ -122,11 +122,10 @@ def main(args):
     hidden_size = 512
     num_layer = 1
     if attention:
+        print("initializing decoder with attention {}....".format(attention))
         if pretrained == "vgg":
-            print("initializing decoder with attention....")
             decoder = AttentionDecoder2D(attention, batch_size, input_size, hidden_size, 512, 14, num_layer).cuda()
         elif pretrained == "resnet":
-            print("initializing decoder with attention....")
             decoder = AttentionDecoder2D(attention, batch_size, input_size, hidden_size, 2048, 7, num_layer).cuda()
     else:
         print("initializing decoder without attention....")        
@@ -367,7 +366,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=50, help="batch size")
     parser.add_argument("--gpu", type=str, help="specify the graphic card")
     parser.add_argument("--pretrained", type=str, default=None, help="vgg/resnet")
-    parser.add_argument("--attention", type=str, default='none', help="att2all/att2in/spatial/none")
+    parser.add_argument("--attention", type=str, default='none', help="att2all/att2in/spatial/adaptive/none")
     parser.add_argument("--evaluation", type=str, default="false", help="true/false")
     args = parser.parse_args()
     main(args)
