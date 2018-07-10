@@ -86,6 +86,6 @@ python show_attention.py --phase=test --pretrained=resnet --train_size=-1 --val_
 > |Model|train_size|test_size|learning_rate|weight_decay|batch_size|beam_size|dropout|
 > |---|---|---|---|---|---|---|---|
 > |__ResNet152 <br/> LSTM__|-1|-1|2e-4|0|512|7|0|
-> |__ResNet152 <br/> Att2in <br/> LSTM__|-1|-1|2e-4|1e-5|256|7|0|
-> |__ResNet152 <br/> Att2all <br/> LSTM__|-1|-1|2e-4|1e-5|256|7|0|
-> |__ResNet152 <br/> Spatial attention <br/> LSTM__|-1|-1|2e-4|1e-5|256|7|0|
+> |__ResNet152 <br/> Att2in <br/> LSTM__|-1|-1|5e-4|1e-4|256|7|0|
+> |__ResNet152 <br/> Att2all <br/> LSTM__|-1|-1|5e-4|1e-4|256|7|0|
+> |__ResNet152 <br/> Spatial attention <br/> LSTM__|-1|-1|5e-4|1e-4|256|7|0|
