@@ -5,9 +5,9 @@ python train.py \
 --epoch=50 \
 --verbose=500 \
 --learning_rate=5e-4 \
---weight_decay=1e-4 \
+--weight_decay=1e-5 \
 --batch_size=256 \
---gpu=2 \
+--gpu=0 \
 --pretrained=resnet \
---attention=adaptive \
+--attention=spatial \
 --evaluation=true

@@ -53,7 +53,7 @@ class EncoderVGG16BN(nn.Module):
         self.max_pool = nn.MaxPool2d(kernel_size=2, stride=2)
         self.output_layer = nn.Sequential(
             *list(torchmodels.vgg16_bn(pretrained=True).classifier.children())[:-1],
-            nn.Linear(4096, 512),
+            nn.Linear(4096, 512, bias=False),
             # nn.Dropout(p=0.2),
             nn.BatchNorm1d(512, momentum=0.01)
         )
@@ -77,13 +77,13 @@ class AttentionEncoderVGG16BN(nn.Module):
         super(AttentionEncoderVGG16BN, self).__init__()
         self.avg_pool = nn.AvgPool2d(kernel_size=14, stride=14)
         self.global_mapping = nn.Sequential(
-            nn.Linear(512, 512),
+            nn.Linear(512, 512, bias=False),
             nn.ReLU(),
             # nn.Dropout(p=0.5),
             nn.BatchNorm2d(512, momentum=0.01)
         )
         self.area_mapping = nn.Sequential(
-            nn.Linear(512, 512),
+            nn.Linear(512, 512, bias=False),
             nn.ReLU(),
             # nn.Dropout(p=0.5),
             nn.BatchNorm2d(512, momentum=0.01)
@@ -136,7 +136,7 @@ class EncoderResNet152(nn.Module):
         super(EncoderResNet152, self).__init__()
         self.avg_pool = nn.AvgPool2d(kernel_size=7, stride=7)
         self.output_layer = nn.Sequential(
-            nn.Linear(2048, 512),
+            nn.Linear(2048, 512, bias=False),
             nn.ReLU(),
             # nn.Dropout(p=0.2),
             nn.BatchNorm1d(512, momentum=0.01)
@@ -161,13 +161,13 @@ class AttentionEncoderResNet152(nn.Module):
         super(AttentionEncoderResNet152, self).__init__()
         self.avg_pool = nn.AvgPool2d(kernel_size=7, stride=7)
         self.global_mapping = nn.Sequential(
-            nn.Linear(2048, 512),
+            nn.Linear(2048, 512, bias=False),
             nn.ReLU(),
             # nn.Dropout(p=0.2),
             nn.BatchNorm1d(512, momentum=0.01)
         )
         self.area_mapping = nn.Sequential(
-            nn.Linear(2048, 512),
+            nn.Linear(2048, 512, bias=False),
             nn.ReLU(),
             # nn.Dropout(p=0.2),
         )
