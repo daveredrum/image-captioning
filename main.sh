@@ -3,11 +3,11 @@ python train.py \
 --val_size=-1 \
 --test=-1 \
 --epoch=50 \
---verbose=500 \
+--verbose=200 \
 --learning_rate=5e-4 \
---weight_decay=1e-5 \
+--weight_decay=0 \
 --batch_size=256 \
---gpu=0 \
+--gpu=1 \
 --pretrained=resnet \
---attention=spatial \
+--attention=adaptive \
 --evaluation=true
