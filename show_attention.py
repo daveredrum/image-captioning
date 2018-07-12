@@ -68,6 +68,7 @@ def main(args):
 
     if not os.path.exists("outputs/vis/{}".format(dir_name)):
             os.mkdir("outputs/vis/{}".format(dir_name))
+    
     for idx in range(num):
         # testing
         print("testing :", idx)
@@ -81,12 +82,12 @@ def main(args):
 
          # plot testing results
         outname = "{}_{}".format(dir_name, idx)
-        if not os.path.exists("outputs/vis/{}/{}".format(dir_name, outname)):
-            os.mkdir("outputs/vis/{}/{}".format(dir_name, outname))
-        print("saving results...")
-        df = {"step {}".format(i+1): pairs[i][1].view(-1).data.cpu().numpy().tolist() for i in range(len(pairs))}
-        df = pandas.DataFrame(df, columns=['step {}'.format(str(i+1)) for i in range(len(pairs))])
-        df.to_csv("outputs/vis/{}/{}/{}.csv".format(dir_name, outname, outname), index=False)
+        # if not os.path.exists("outputs/vis/{}/{}".format(dir_name, outname)):
+        #     os.mkdir("outputs/vis/{}/{}".format(dir_name, outname))
+        # print("saving results...")
+        # df = {"step {}".format(i+1): pairs[i][1].view(-1).data.cpu().numpy().tolist() for i in range(len(pairs))}
+        # df = pandas.DataFrame(df, columns=['step {}'.format(str(i+1)) for i in range(len(pairs))])
+        # df.to_csv("outputs/vis/{}/{}/{}.csv".format(dir_name, outname, outname), index=False)
 
         # subplot settings
         num_col = 4
@@ -123,7 +124,7 @@ def main(args):
 
 
         # fig.tight_layout()
-        plt.savefig("outputs/vis/{}/{}/{}.png".format(dir_name, outname, outname), bbox_inches="tight")
+        plt.savefig("outputs/vis/{}/{}.png".format(dir_name, outname), bbox_inches="tight")
         fig.clf()
 
 if __name__ == "__main__":
