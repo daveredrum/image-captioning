@@ -14,8 +14,10 @@ from data import *
 from decoders import *
 from solver import *
 import matplotlib
+import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import configs
+import skimage.transform
 
 def main(args):
     # settings
@@ -118,8 +120,13 @@ def main(args):
         print("visualizing attention weights...\n")
         for i in range(len(pairs)):
             plt.subplot2grid((num_row, num_col), (i // num_col + 1, i % num_col))
-            plt.imshow(pairs[i][2].data.cpu().numpy())
+            attention = pairs[i][2].data.cpu().numpy()
+            attention = skimage.transform.pyramid_expand(attention.reshape(7, 7), upscale=32, sigma=20)
+            plt.imshow(image)
+            plt.imshow(attention, alpha=0.8)
+            # plt.imshow(pairs[i][2].data.cpu().numpy())
             plt.text(0, 0, pairs[i][0], fontsize=16, color='black', backgroundcolor='white')
+            plt.set_cmap(cm.Greys_r)
             plt.axis('off')
 
 

@@ -532,7 +532,7 @@ class EncoderDecoder():
         states = None
         # sample text indices via greedy search
         sampled = []
-        for i in range(max_length):
+        for _ in range(max_length):
             outputs, states = self.decoder.lstm_layer(inputs, states)
             outputs = self.decoder.output_layer(outputs[0])
             predicted = outputs.max(1)[1]
@@ -614,8 +614,9 @@ class AttentionEncoderDecoder():
             # predicted = (1, 1)
             caption_inputs = predicted.view(1)
             word = dict_idx2word[predicted.cpu().numpy()[0][0]]
-            up_weights = F.upsample(attention_weights.view(1, 1, visual_contexts[0].size(2), visual_contexts[0].size(2)), size=(configs.COCO_SIZE, configs.COCO_SIZE), mode='bilinear')
-            pairs.append((word, attention_weights.view(self.size, self.size), up_weights.view(configs.COCO_SIZE, configs.COCO_SIZE), states[0][0]))
+            # up_weights = F.upsample(attention_weights.view(1, 1, visual_contexts[0].size(2), visual_contexts[0].size(2)), size=(configs.COCO_SIZE, configs.COCO_SIZE), mode='bilinear')
+            # pairs.append((word, attention_weights.view(self.size, self.size), up_weights.view(configs.COCO_SIZE, configs.COCO_SIZE), states[0][0]))
+            pairs.append((word, attention_weights.view(self.size, self.size), attention_weights, states[0][0]))
             if word == '<END>':
                 break
 
