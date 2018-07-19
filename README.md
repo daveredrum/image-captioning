@@ -81,7 +81,8 @@ python show_attention.py --phase=test --pretrained=resnet --train_size=-1 --val_
 |__FC__|__0.720__|__0.536__|__0.388__|__0.286__|__0.805__|
 |__Att2in__|__0.732__|__0.553__|__0.402__|__0.296__|__0.837__|
 |__Att2all__|__0.732__|__0.554__|__0.403__|__0.296__|__0.838__|
-|__Spatial attention__|__0.729__|__0.547__|__0.397__|__0.292__|__0.808__|
+|__Spatial attention__|__0.725__|__0.537__|__0.389__|__0.287__|__0.812__|
+|__Adaptive attention__|__0.716__|__0.524__|__0.379__|__0.278__|__0.808__|
 |NeuralTalk2|0.625|0.45|0.321|0.23|0.66|
 |Show and Tell|0.666|0.461|0.329|0.27|-|
 |Show, Attend and Tell|0.707|0.492|0.344|0.243|-|
@@ -95,4 +96,5 @@ python show_attention.py --phase=test --pretrained=resnet --train_size=-1 --val_
 > |__FC__|-1|-1|2e-4|0|512|7|0|
 > |__Att2in__|-1|-1|5e-4|1e-4|256|7|0|
 > |__Att2all__|-1|-1|5e-4|1e-4|256|7|0|
-> |__Spatial attention__|-1|-1|5e-4|1e-4|256|7|0|
+> |__Spatial attention__|-1|-1|2e-4|1e-4|256|7|0|
+> |__Adaptive attention__|-1|-1|2e-4|1e-4|256|7|0|
